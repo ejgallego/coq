@@ -191,7 +191,7 @@ match local with
 
 | Global | Local | Discharge ->
   let local = DeclareDef.get_locality ident ~kind:"axiom" local in
-  let inl = match nl with
+  let inl = let open Declaremods in match nl with
     | NoInline -> None
     | DefaultInline -> Some (Flags.get_inline_level())
     | InlineAt i -> Some i

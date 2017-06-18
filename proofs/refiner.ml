@@ -176,9 +176,9 @@ let tclPROGRESS tac ptree =
    NOTE: some tactics delete hypothesis and reuse names (induction,
    destruct), this is not detected by this tactical. *)
 let tclSHOWHYPS (tac : tactic) (goal: Goal.goal Evd.sigma)
-    :Proof_type.goal list Evd.sigma =
+    : Goal.goal list Evd.sigma =
   let oldhyps = pf_hyps goal in
-  let rslt:Proof_type.goal list Evd.sigma = tac goal in
+  let rslt: Goal.goal list Evd.sigma = tac goal in
   let { it = gls; sigma = sigma; } = rslt in
   let hyps =
     List.map (fun gl -> pf_hyps { it = gl; sigma=sigma; }) gls in

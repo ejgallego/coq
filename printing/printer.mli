@@ -13,8 +13,8 @@ open Term
 open Environ
 open Pattern
 open Evd
-open Proof_type
 open Glob_term
+open Glob_ops
 
 (** These are the entry points for printing terms, context, tac, ... *)
 
@@ -144,7 +144,7 @@ val pr_transparent_state   : transparent_state -> std_ppcmds
 
 (** Proofs, these functions obey [Hyps Limit] and [Compact contexts]. *)
 
-val pr_goal                : goal sigma -> std_ppcmds
+val pr_goal                : Goal.goal sigma -> std_ppcmds
 
 (** [pr_subgoals ~pr_first pp sigma seeds shelf focus_stack unfocused goals]
    prints the goals of the list [goals] followed by the goals in
@@ -156,10 +156,10 @@ val pr_goal                : goal sigma -> std_ppcmds
    [enable_unfocused_goal_printing] is set. [seeds] is for printing
    dependent evars (mainly for emacs proof tree mode). *)
 val pr_subgoals            : ?pr_first:bool -> std_ppcmds option -> evar_map -> evar list -> Goal.goal list -> int list
-                             -> goal list -> goal list -> std_ppcmds
+                             -> Goal.goal list -> Goal.goal list -> std_ppcmds
 
-val pr_subgoal             : int -> evar_map -> goal list -> std_ppcmds
-val pr_concl               : int -> evar_map -> goal -> std_ppcmds
+val pr_subgoal             : int -> evar_map -> Goal.goal list -> std_ppcmds
+val pr_concl               : int -> evar_map -> Goal.goal -> std_ppcmds
 
 val pr_open_subgoals       : ?proof:Proof.proof -> unit -> std_ppcmds
 val pr_nth_open_subgoal    : int -> std_ppcmds
@@ -169,7 +169,7 @@ val pr_evars               : evar_map -> evar_info Evar.Map.t -> std_ppcmds
 val pr_ne_evar_set         : std_ppcmds -> std_ppcmds -> evar_map ->
   Evar.Set.t -> std_ppcmds
 
-val pr_prim_rule           : prim_rule -> std_ppcmds
+val pr_prim_rule           : Proof_type.prim_rule -> std_ppcmds
 
 (** Backwards compatibility *)
 
@@ -199,9 +199,9 @@ val pr_goal_by_id : Id.t -> std_ppcmds
 val pr_goal_by_uid : string -> std_ppcmds
 
 type printer_pr = {
- pr_subgoals            : ?pr_first:bool -> std_ppcmds option -> evar_map -> evar list -> Goal.goal list -> int list -> goal list -> goal list -> std_ppcmds;
- pr_subgoal             : int -> evar_map -> goal list -> std_ppcmds;
- pr_goal                : goal sigma -> std_ppcmds;
+ pr_subgoals            : ?pr_first:bool -> std_ppcmds option -> evar_map -> evar list -> Goal.goal list -> int list -> Goal.goal list -> Goal.goal list -> std_ppcmds;
+ pr_subgoal             : int -> evar_map -> Goal.goal list -> std_ppcmds;
+ pr_goal                : Goal.goal sigma -> std_ppcmds;
 };;
 
 val set_printer_pr : printer_pr -> unit

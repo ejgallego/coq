@@ -245,7 +245,7 @@ let push_history_pattern n pci cont =
 
 type 'a pattern_matching_problem =
     { env       : env;
-      lvar      : Glob_term.ltac_var_map;
+      lvar      : ltac_var_map;
       evdref    : evar_map ref;
       pred      : constr;
       tomatch   : tomatch_stack;

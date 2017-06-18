@@ -84,30 +84,3 @@ type extended_glob_local_binder_r =
   | GLocalDef     of Name.t * binding_kind * glob_constr * glob_constr option
   | GLocalPattern of (cases_pattern * Id.t list) * Id.t * binding_kind * glob_constr
 and extended_glob_local_binder = extended_glob_local_binder_r CAst.t
-
-(** A globalised term together with a closure representing the value
-    of its free variables. Intended for use when these variables are taken
-    from the Ltac environment. *)
-type closure = {
-  idents:Id.t Id.Map.t;
-  typed: Pattern.constr_under_binders Id.Map.t ;
-  untyped:closed_glob_constr Id.Map.t }
-and closed_glob_constr = {
-  closure: closure;
-  term: glob_constr }
-
-(** Ltac variable maps *)
-type var_map = Pattern.constr_under_binders Id.Map.t
-type uconstr_var_map = closed_glob_constr Id.Map.t
-type unbound_ltac_var_map = Geninterp.Val.t Id.Map.t
-
-type ltac_var_map = {
-  ltac_constrs : var_map;
-  (** Ltac variables bound to constrs *)
-  ltac_uconstrs : uconstr_var_map;
-  (** Ltac variables bound to untyped constrs *)
-  ltac_idents: Id.t Id.Map.t;
-  (** Ltac variables bound to identifiers *)
-  ltac_genargs : unbound_ltac_var_map;
-  (** Ltac variables bound to other kinds of arguments *)
-}

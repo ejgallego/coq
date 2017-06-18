@@ -12,14 +12,14 @@ open Environ
 open EConstr
 open Evd
 open Proof_type
+open Goal
 open Redexpr
 open Pattern
 open Locus
 
 (** Operations for handling terms under a local typing context. *)
-
+type tactic = Proof_type.tactic
 type 'a sigma   = 'a Evd.sigma;;
-type tactic     = Proof_type.tactic;;
 
 val sig_it  : 'a sigma   -> 'a
 val project : goal sigma -> evar_map
@@ -77,13 +77,13 @@ val pf_const_value : goal sigma -> pconstant -> constr
 val pf_conv_x      : goal sigma -> constr -> constr -> bool
 val pf_conv_x_leq  : goal sigma -> constr -> constr -> bool
 
-val pf_matches     : goal sigma -> constr_pattern -> constr -> patvar_map
+val pf_matches     : goal sigma -> constr_pattern -> constr -> Glob_ops.patvar_map
 val pf_is_matching : goal sigma -> constr_pattern -> constr -> bool
 
 
 (** {6 The most primitive tactics. } *)
 
-val refiner                   : rule -> tactic
+val refiner                   : prim_rule -> tactic
 val internal_cut_no_check     : bool -> Id.t -> types -> tactic
 val refine_no_check           : constr -> tactic
 
@@ -102,7 +102,7 @@ module New : sig
   val pf_apply : (env -> evar_map -> 'a) -> 'b Proofview.Goal.t -> 'a
   val pf_global : identifier -> 'a Proofview.Goal.t -> Globnames.global_reference
   (** FIXME: encapsulate the level in an existential type. *)
-  val of_old : (Proof_type.goal Evd.sigma -> 'a) -> [ `NF ] Proofview.Goal.t -> 'a
+  val of_old : (Goal.goal Evd.sigma -> 'a) -> [ `NF ] Proofview.Goal.t -> 'a
 
   val project : 'a Proofview.Goal.t -> Evd.evar_map
   val pf_env : 'a Proofview.Goal.t -> Environ.env
@@ -138,7 +138,7 @@ module New : sig
   val pf_whd_all : 'a Proofview.Goal.t -> constr -> constr
   val pf_compute : 'a Proofview.Goal.t -> constr -> constr
 
-  val pf_matches : 'a Proofview.Goal.t -> constr_pattern -> constr -> patvar_map
+  val pf_matches : 'a Proofview.Goal.t -> constr_pattern -> constr -> Glob_ops.patvar_map
 
   val pf_nf_evar : 'a Proofview.Goal.t -> constr -> constr
 

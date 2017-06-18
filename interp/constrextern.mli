@@ -13,6 +13,7 @@ open Environ
 open Libnames
 open Globnames
 open Glob_term
+open Glob_ops
 open Pattern
 open Constrexpr
 open Notation_term

@@ -19,6 +19,7 @@ open Term
 open EConstr
 open Vars
 open Pattern
+open Glob_ops
 open Patternops
 open Misctypes
 open Context.Rel.Declaration

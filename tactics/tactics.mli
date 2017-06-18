@@ -11,7 +11,7 @@ open Names
 open Term
 open EConstr
 open Environ
-open Proof_type
+open Goal
 open Evd
 open Clenv
 open Redexpr
@@ -131,7 +131,7 @@ val exact_proof      : Constrexpr.constr_expr -> unit Proofview.tactic
 
 type tactic_reduction = env -> evar_map -> constr -> constr
 
-type change_arg = patvar_map -> evar_map -> evar_map * constr
+type change_arg = Glob_ops.patvar_map -> evar_map -> evar_map * constr
 
 val make_change_arg   : constr -> change_arg
 val reduct_in_hyp     : ?check:bool -> tactic_reduction -> hyp_location -> unit Proofview.tactic

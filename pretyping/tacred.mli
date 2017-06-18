@@ -12,6 +12,7 @@ open Evd
 open EConstr
 open Reductionops
 open Pattern
+open Glob_ops
 open Globnames
 open Locus
 open Univ

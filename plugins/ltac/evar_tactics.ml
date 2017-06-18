@@ -8,7 +8,7 @@
 
 open Util
 open Names
-open Term
+open Constr
 open CErrors
 open Evar_refiner
 open Tacmach
@@ -27,7 +27,7 @@ let instantiate_evar evk (ist,rawc) sigma =
   let filtered = Evd.evar_filtered_env evi in
   let constrvars = Tacinterp.extract_ltac_constr_values ist filtered in
   let lvar = {
-    Glob_term.ltac_constrs = constrvars;
+    Glob_ops.ltac_constrs = constrvars;
     ltac_uconstrs = Names.Id.Map.empty;
     ltac_idents = Names.Id.Map.empty;
     ltac_genargs = ist.Geninterp.lfun;

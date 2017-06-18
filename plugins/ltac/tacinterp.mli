@@ -44,7 +44,7 @@ val f_avoid_ids : Id.t list TacStore.field
 val f_debug : debug_info TacStore.field
 
 val extract_ltac_constr_values : interp_sign -> Environ.env ->
-  Pattern.constr_under_binders Id.Map.t
+  Glob_ops.constr_under_binders Id.Map.t
 (** Given an interpretation signature, extract all values which are coercible to
     a [constr]. *)
 
@@ -74,10 +74,10 @@ val interp_hyp : interp_sign -> Environ.env -> Evd.evar_map ->
 
 val interp_glob_closure : interp_sign -> Environ.env -> Evd.evar_map ->
   ?kind:Pretyping.typing_constraint -> ?pattern_mode:bool -> glob_constr_and_expr ->
-  Glob_term.closed_glob_constr
+  Glob_ops.closed_glob_constr
 
 val interp_uconstr : interp_sign -> Environ.env -> Evd.evar_map ->
-  glob_constr_and_expr -> Glob_term.closed_glob_constr
+  glob_constr_and_expr -> Glob_ops.closed_glob_constr
 
 val interp_constr_gen : Pretyping.typing_constraint -> interp_sign ->
   Environ.env -> Evd.evar_map -> glob_constr_and_expr -> Evd.evar_map * constr

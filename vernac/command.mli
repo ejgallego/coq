@@ -45,11 +45,11 @@ val do_definition : Id.t -> definition_kind -> lident list option ->
 val declare_assumption : coercion_flag -> assumption_kind -> 
   types Univ.in_universe_context_set ->
   Universes.universe_binders -> Impargs.manual_implicits ->
-  bool (** implicit *) -> Vernacexpr.inline -> variable Loc.located ->
+  bool (** implicit *) -> Declaremods.inline -> variable Loc.located ->
   global_reference * Univ.Instance.t * bool
 
 val do_assumptions : locality * polymorphic * assumption_object_kind ->
-  Vernacexpr.inline -> (plident list * constr_expr) with_coercion list -> bool
+  Declaremods.inline -> (plident list * constr_expr) with_coercion list -> bool
 
 (* val declare_assumptions : variable Loc.located list -> *)
 (*   coercion_flag -> assumption_kind -> types Univ.in_universe_context_set ->  *)

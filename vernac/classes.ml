@@ -411,7 +411,7 @@ let context poly l =
       let nstatus = match b with
       | None ->
         pi3 (Command.declare_assumption false decl (t, !uctx) [] [] impl
-          Vernacexpr.NoInline (Loc.tag id))
+          Declaremods.NoInline (Loc.tag id))
       | Some b ->
         let ctx = Univ.ContextSet.to_context !uctx in
         let decl = (Discharge, poly, Definition) in

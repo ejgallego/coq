@@ -638,7 +638,7 @@ let vernac_declare_module export (loc, id) binders_ast mty_ast =
      else (idl,ty)) binders_ast in
   let mp =
     Declaremods.declare_module Modintern.interp_module_ast
-      id binders_ast (Enforce mty_ast) []
+      id binders_ast (Declaremods.Enforce mty_ast) []
   in
   Dumpglob.dump_moddef ?loc mp "mod";
   if_verbose Feedback.msg_info (str "Module " ++ pr_id id ++ str " is declared");

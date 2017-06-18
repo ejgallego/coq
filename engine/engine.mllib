@@ -3,6 +3,7 @@ Universes
 UState
 Evd
 EConstr
+Tactypes
 Namegen
 Termops
 Proofview_monad

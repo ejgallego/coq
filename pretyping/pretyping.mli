@@ -17,6 +17,7 @@ open Environ
 open Evd
 open EConstr
 open Glob_term
+open Glob_ops
 open Evarutil
 open Misctypes
 
@@ -27,7 +28,7 @@ val search_guard :
 
 type typing_constraint = OfType of types | IsType | WithoutTypeConstraint
 
-type glob_constr_ltac_closure = ltac_var_map * glob_constr
+type glob_constr_ltac_closure = Glob_ops.ltac_var_map * glob_constr
 type pure_open_constr = evar_map * constr
 
 type inference_hook = env -> evar_map -> evar -> evar_map * constr
@@ -102,7 +103,7 @@ val understand_judgment_tcc : env -> evar_map ref ->
 val type_uconstr :
   ?flags:inference_flags ->
   ?expected_type:typing_constraint ->
-  Geninterp.interp_sign -> Glob_term.closed_glob_constr -> constr Tactypes.delayed_open
+  Geninterp.interp_sign -> closed_glob_constr -> constr Tactypes.delayed_open
 
 (** Trying to solve remaining evars and remaining conversion problems
     possibly using type classes, heuristics, external tactic solver

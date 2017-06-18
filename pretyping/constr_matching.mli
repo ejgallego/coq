@@ -13,6 +13,7 @@ open Term
 open EConstr
 open Environ
 open Pattern
+open Glob_ops
 
 type binding_bound_vars = Id.Set.t
 

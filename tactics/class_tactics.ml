@@ -18,7 +18,7 @@ open Names
 open Term
 open Termops
 open EConstr
-open Proof_type
+open Goal
 open Tacmach
 open Tactics
 open Clenv

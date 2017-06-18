@@ -9,8 +9,8 @@
 (** Legacy proof engine. Do not use in newly written code. *)
 
 open Evd
-open Proof_type
 open EConstr
+open Proof_type
 
 (** The refiner (handles primitive rules and high-level tactics). *)
 
@@ -25,7 +25,7 @@ val repackage : evar_map ref -> 'a -> 'a sigma
 val apply_sig_tac :
   evar_map ref -> (goal sigma -> goal list sigma) -> goal -> goal list
 
-val refiner : rule -> tactic
+val refiner : prim_rule -> tactic
 
 (** {6 Tacticals. } *)
 

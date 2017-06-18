@@ -11,6 +11,7 @@ open Term
 open Environ
 open EConstr
 open Glob_term
+open Glob_ops
 open Termops
 open Mod_subst
 open Misctypes

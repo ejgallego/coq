@@ -28,8 +28,8 @@ let re_sig it  gc = { it = it; sigma = gc; }
 (* Operations for handling terms under a local typing context *)
 (**************************************************************)
 
-type 'a sigma   = 'a Evd.sigma;;
 type tactic     = Proof_type.tactic;;
+type 'a sigma   = 'a Evd.sigma;;
 
 let unpackage = Refiner.unpackage
 let repackage = Refiner.repackage

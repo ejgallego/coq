@@ -13,6 +13,7 @@ open Names
 open Constrexpr
 open Constrexpr_ops
 open Extend
+open Declaremods
 open Vernacexpr
 open Decl_kinds
 open Misctypes

@@ -756,6 +756,7 @@ let default_pr_subgoals ?(pr_first=true)
 (**********************************************************************)
 (* Abstraction layer                                                  *)
 
+open Goal
 
 type printer_pr = {
  pr_subgoals            : ?pr_first:bool -> std_ppcmds option -> evar_map -> evar list -> Goal.goal list -> int list -> goal list -> goal list -> std_ppcmds;

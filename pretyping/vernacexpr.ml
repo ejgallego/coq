@@ -287,22 +287,7 @@ type stm_vernac =
 
 (** {6 Types concerning the module layer} *)
 
-(** Rigid / flexible module signature *)
-
-type 'a module_signature =
-  | Enforce of 'a (** ... : T *)
-  | Check of 'a list (** ... <: T1 <: T2, possibly empty *)
-
-(** Which module inline annotations should we honor,
-    either None or the ones whose level is less or equal
-    to the given integer *)
-
-type inline =
-  | NoInline
-  | DefaultInline
-  | InlineAt of int
-
-type module_ast_inl = module_ast * inline
+type module_ast_inl = module_ast * Declaremods.inline
 type module_binder = bool option * lident list * module_ast_inl
 
 (** {6 The type of vernacular expressions} *)
@@ -335,7 +320,7 @@ type vernac_expr =
   | VernacEndProof of proof_end
   | VernacExactProof of constr_expr
   | VernacAssumption of (locality option * assumption_object_kind) *
-      inline * (plident list * constr_expr) with_coercion list
+      Declaremods.inline * (plident list * constr_expr) with_coercion list
   | VernacInductive of cumulative_inductive_flag * private_flag * inductive_flag * (inductive_expr * decl_notation list) list
   | VernacFixpoint of
       locality option * (fixpoint_expr * decl_notation list) list
@@ -378,7 +363,7 @@ type vernac_expr =
   | VernacDeclareModule of bool option * lident *
       module_binder list * module_ast_inl
   | VernacDefineModule of bool option * lident * module_binder list *
-      module_ast_inl module_signature * module_ast_inl list
+      module_ast_inl Declaremods.module_signature * module_ast_inl list
   | VernacDeclareModuleType of lident *
       module_binder list * module_ast_inl list * module_ast_inl list
   | VernacInclude of module_ast_inl list

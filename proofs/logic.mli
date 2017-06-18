@@ -30,7 +30,7 @@ val with_check    : tactic -> tactic
 
 (** The primitive refiner. *)
 
-val prim_refiner : prim_rule -> evar_map -> goal -> goal list * evar_map
+val prim_refiner : prim_rule -> evar_map -> Goal.goal -> Goal.goal list * evar_map
 
 
 (** {6 Refiner errors. } *)

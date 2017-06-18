@@ -15,8 +15,20 @@ open Entries
 open Libnames
 open Libobject
 open Mod_subst
-open Vernacexpr
 open Misctypes
+
+(** {6 Types concerning the module layer} *)
+
+(** Rigid / flexible module signature *)
+
+type 'a module_signature =
+  | Enforce of 'a (** ... : T *)
+  | Check of 'a list (** ... <: T1 <: T2, possibly empty *)
+
+type inline =
+  | NoInline
+  | DefaultInline
+  | InlineAt of int
 
 (** {6 Inlining levels} *)
 

@@ -8,9 +8,10 @@
 
 open Util
 open Names
-open Term
+open Sorts
+open Constr
 open EConstr
-open Pattern
+open Glob_ops
 open Misctypes
 open Genarg
 open Stdarg

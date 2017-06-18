@@ -1,10 +1,10 @@
 
 (* val evaluable_of_global_reference : Libnames.global_reference -> Names.evaluable_global_reference *)
 val tclUSER_if_not_mes : 
-  Tacmach.tactic ->
+  Proof_type.tactic ->
   bool -> 
   Names.Id.t list option -> 
-  Tacmach.tactic
+  Proof_type.tactic
 val recursive_definition :  
 bool ->
            Names.Id.t ->

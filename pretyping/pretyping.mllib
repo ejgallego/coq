@@ -1,9 +1,11 @@
+Vernacexpr
 Locusops
 Pretype_errors
 Reductionops
 Inductiveops
 Vnorm
 Arguments_renaming
+Impargs
 Nativenorm
 Retyping
 Cbv

@@ -14,7 +14,7 @@ open Nameops
 open Term
 open Termops
 open EConstr
-open Proof_type
+open Goal
 open Tacticals
 open Tacmach
 open Tactics

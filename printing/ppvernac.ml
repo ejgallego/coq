@@ -217,12 +217,12 @@ open Decl_kinds
       pr_module_ast leading_space pr_c me1 ++ spc() ++
         hov 1 (str"(" ++ pr_module_ast false pr_c me2 ++ str")")
 
-  let pr_inline = function
+  let pr_inline = let open Declaremods in function
     | DefaultInline -> mt ()
     | NoInline -> str "[no inline]"
     | InlineAt i -> str "[inline at level " ++ int i ++ str "]"
 
-  let pr_assumption_inline = function
+  let pr_assumption_inline = let open Declaremods in function
     | DefaultInline -> str "Inline"
     | NoInline -> mt ()
     | InlineAt i -> str "Inline(" ++ int i ++ str ")"
@@ -230,7 +230,7 @@ open Decl_kinds
   let pr_module_ast_inl leading_space pr_c (mast,inl) =
     pr_module_ast leading_space pr_c mast ++ pr_inline inl
 
-  let pr_of_module_type prc = function
+  let pr_of_module_type prc = let open Declaremods in function
     | Enforce mty -> str ":" ++ pr_module_ast_inl true prc mty
     | Check mtys ->
       prlist_strict (fun m -> str "<:" ++ pr_module_ast_inl true prc m) mtys
