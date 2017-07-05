@@ -349,51 +349,6 @@ sig
   val family : t -> family
 end
 
-module Evar :
-sig
-  (** Unique identifier of some {i evar} *)
-  type t = Term.existential_key
-
-  (** Recover the underlying integer. *)
-  val repr : t -> int
-
-  val equal : t -> t -> bool
-
-  (** a set of unique identifiers of some {i evars} *)
-  module Set :
-  sig
-    type elt = Term.existential_key
-    type t = Evar.Set.t
-    val empty : t
-    val is_empty : t -> bool
-    val mem : elt -> t -> bool
-    val add : elt -> t -> t
-    val singleton : elt -> t
-    val remove : elt -> t -> t
-    val union : t -> t -> t
-    val inter : t -> t -> t
-    val diff : t -> t -> t
-    val compare : t -> t -> int
-    val equal : t -> t -> bool
-    val subset : t -> t -> bool
-    val iter : (elt -> unit) -> t -> unit
-    val map : (elt -> elt) -> t -> t
-    val fold : (elt -> 'a -> 'a) -> t -> 'a -> 'a
-    val for_all : (elt -> bool) -> t -> bool
-    val exists : (elt -> bool) -> t -> bool
-    val filter : (elt -> bool) -> t -> t
-    val partition : (elt -> bool) -> t -> t * t
-    val cardinal : t -> int
-    val elements : t -> elt list
-    val min_elt : t -> elt
-    val max_elt : t -> elt
-    val choose : t -> elt
-    val split : elt -> t -> t * bool * t
-    val find : elt -> t -> elt
-    val of_list : elt list -> t
-  end
-end
-
 module Workaround :
 sig
   type constr = Term.constr  (* the same type as Term.constr *)
@@ -653,6 +608,20 @@ sig
   val substnl : substl -> int -> constr -> constr
 end
 
+module Evar :
+sig
+  (** Unique identifier of some {i evar} *)
+  type t = Evar.t
+
+  (** Recover the underlying integer. *)
+  val repr : t -> int
+
+  val equal : t -> t -> bool
+
+  (** a set of unique identifiers of some {i evars} *)
+  module Set : module type of struct include Evar.Set end
+end
+
 module Term :
 sig
 
@@ -673,7 +642,7 @@ sig
 
   type ('constr, 'types) prec_declaration = Names.Name.t array * 'types array * 'constr array
 
-  type existential_key = Term.existential_key
+  type existential_key = Evar.t
   type 'constr pexistential = existential_key * 'constr array
   type cast_kind = Term.cast_kind =
                  | VMcast
