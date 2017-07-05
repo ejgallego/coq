@@ -349,6 +349,12 @@ sig
   val family : t -> family
 end
 
+(* This module will disappear in the future when the cyclic dependency of Context and Term
+   modules will be removed.
+
+   It would be possible to remove this module even now (by taking advantage of the mechanism
+   provided by Ocaml for defining mutually recursive modules).
+*)
 module Workaround :
 sig
   type constr = Term.constr  (* the same type as Term.constr *)
