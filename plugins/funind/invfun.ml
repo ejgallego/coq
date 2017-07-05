@@ -11,7 +11,7 @@ open Declarations
 open CErrors
 open Util
 open Names
-open Constr
+open Term
 open EConstr
 open Vars
 open Pp

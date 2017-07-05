@@ -6,7 +6,7 @@
 (*         *       GNU Lesser General Public License Version 2.1        *)
 (************************************************************************)
 
-open Constr
+open Term
 open EConstr
 open Hipattern
 open Names

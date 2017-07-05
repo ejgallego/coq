@@ -1,7 +1,7 @@
 open Printer
 open CErrors
 open Util
-open Constr
+open Term
 open Vars
 open Namegen
 open Names
@@ -118,7 +118,7 @@ let compute_new_princ_type_from_rel rel_to_fun sorts princ_type =
     observe (str "replacing " ++ pr_lconstr c ++ str " by "  ++ pr_lconstr res);
     res
   in
-  let rec compute_new_princ_type remove env pre_princ : types * (Constr.t list) =
+  let rec compute_new_princ_type remove env pre_princ : types * (Term.constr list) =
     let (new_princ_type,_) as res =
       match Term.kind_of_term pre_princ with
 	| Rel n ->
@@ -150,7 +150,7 @@ let compute_new_princ_type_from_rel rel_to_fun sorts princ_type =
 	    in
 	    let new_f,binders_to_remove_from_f = compute_new_princ_type remove env f in
 	    Term.applistc new_f new_args,
-	    list_union_eq Constr.equal binders_to_remove_from_f binders_to_remove
+	    list_union_eq Term.eq_constr binders_to_remove_from_f binders_to_remove
 	| LetIn(x,v,t,b) ->
 	    compute_new_princ_type_for_letin remove env x v t b
 	| _ -> pre_princ,[]
@@ -171,13 +171,13 @@ let compute_new_princ_type_from_rel rel_to_fun sorts princ_type =
 	let new_x : Name.t = get_name (Termops.ids_of_context env) x in
 	let new_env = Environ.push_rel (LocalAssum (x,t)) env in
 	let new_b,binders_to_remove_from_b = compute_new_princ_type remove new_env b in
-	 if List.exists (Constr.equal (mkRel 1)) binders_to_remove_from_b
-	 then (pop new_b), filter_map (Constr.equal (mkRel 1)) pop binders_to_remove_from_b
+	 if List.exists (Term.eq_constr (mkRel 1)) binders_to_remove_from_b
+	 then (pop new_b), filter_map (Term.eq_constr (mkRel 1)) pop binders_to_remove_from_b
 	 else
 	   (
 	     bind_fun(new_x,new_t,new_b),
 	     list_union_eq
-	       Constr.equal
+	       Term.eq_constr
 	       binders_to_remove_from_t
 	       (List.map pop binders_to_remove_from_b)
 	   )
@@ -190,7 +190,7 @@ let compute_new_princ_type_from_rel rel_to_fun sorts princ_type =
 	| Toberemoved_with_rel (n,c) ->
 (* 	    observe (str "Decl of "++Ppconstr.Name.print x ++ str " is removed "); *)
 	    let new_b,binders_to_remove_from_b = compute_new_princ_type remove env (substnl [c] n b)  in
-	    new_b, list_add_set_eq Constr.equal (mkRel n) (List.map pop binders_to_remove_from_b)
+	    new_b, list_add_set_eq Term.eq_constr (mkRel n) (List.map pop binders_to_remove_from_b)
     end
   and compute_new_princ_type_for_letin remove env x v t b =
     begin
@@ -200,14 +200,14 @@ let compute_new_princ_type_from_rel rel_to_fun sorts princ_type =
 	let new_x : Name.t = get_name (Termops.ids_of_context env) x in
 	let new_env = Environ.push_rel (LocalDef (x,v,t)) env in
 	let new_b,binders_to_remove_from_b = compute_new_princ_type remove new_env b in
-	if List.exists (Constr.equal (mkRel 1)) binders_to_remove_from_b
-	then (pop new_b),filter_map (Constr.equal (mkRel 1)) pop binders_to_remove_from_b
+	if List.exists (Term.eq_constr (mkRel 1)) binders_to_remove_from_b
+	then (pop new_b),filter_map (Term.eq_constr (mkRel 1)) pop binders_to_remove_from_b
 	else
 	  (
 	    mkLetIn(new_x,new_v,new_t,new_b),
 	    list_union_eq
-	      Constr.equal
-	      (list_union_eq Constr.equal binders_to_remove_from_t binders_to_remove_from_v)
+	      Term.eq_constr
+	      (list_union_eq Term.eq_constr binders_to_remove_from_t binders_to_remove_from_v)
 	      (List.map pop binders_to_remove_from_b)
 	  )
 
@@ -219,12 +219,12 @@ let compute_new_princ_type_from_rel rel_to_fun sorts princ_type =
 	| Toberemoved_with_rel (n,c) ->
 (* 	    observe (str "Decl of "++Ppconstr.Name.print x ++ str " is removed "); *)
 	    let new_b,binders_to_remove_from_b = compute_new_princ_type remove env (substnl [c] n b)  in
-	    new_b, list_add_set_eq Constr.equal (mkRel n) (List.map pop binders_to_remove_from_b)
+	    new_b, list_add_set_eq Term.eq_constr (mkRel n) (List.map pop binders_to_remove_from_b)
     end
   and  compute_new_princ_type_with_acc remove env e (c_acc,to_remove_acc)  =
     let new_e,to_remove_from_e = compute_new_princ_type remove env e
     in
-    new_e::c_acc,list_union_eq Constr.equal to_remove_from_e to_remove_acc
+    new_e::c_acc,list_union_eq Term.eq_constr to_remove_from_e to_remove_acc
   in
 (*   observe (str "Computing new principe from " ++ pr_lconstr_env  env_with_params_and_predicates pre_princ); *)
   let pre_res,_ =
@@ -430,7 +430,7 @@ let get_funs_constant mp dp =
       let first_params = List.hd l_params  in
       List.iter
 	(fun params ->
-	   if not (List.equal (fun (n1, c1) (n2, c2) -> Name.equal n1 n2 && Constr.equal c1 c2) first_params params)
+	   if not (List.equal (fun (n1, c1) (n2, c2) -> Name.equal n1 n2 && Term.eq_constr c1 c2) first_params params)
 	   then user_err Pp.(str "Not a mutal recursive block")
 	)
 	l_params
@@ -450,7 +450,7 @@ let get_funs_constant mp dp =
 	let check body  = (* Hope this is correct *)
 	  let eq_infos (ia1, na1, ta1, ca1) (ia2, na2, ta2, ca2) =
             Array.equal Int.equal ia1 ia2 && Array.equal Name.equal na1 na2 &&
-            Array.equal Constr.equal ta1 ta2 && Array.equal Constr.equal ca1 ca2
+            Array.equal Term.eq_constr ta1 ta2 && Array.equal Term.eq_constr ca1 ca2
 	  in
 	  if not (eq_infos first_infos (extract_info false body))
 	  then  user_err Pp.(str "Not a mutal recursive block")
@@ -574,7 +574,7 @@ let make_scheme evd (fas : (pconstant*glob_sort) list) : Safe_typing.private_con
 		let t =  (Term.strip_prod_assum t) in
 		let applied_g = List.hd (List.rev (snd (Term.decompose_app t))) in
 		let g = fst (Term.decompose_app applied_g) in
-		if Constr.equal f g
+		if Term.eq_constr f g
 		then raise (Found_type j);
 		observe (Printer.pr_lconstr f ++ str " <> " ++
 			   Printer.pr_lconstr g)
