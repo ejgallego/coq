@@ -1417,9 +1417,6 @@ end
 
 module Evd :
 sig
-
-  type evar = Evar.t
-
   val string_of_existential : Evar.t -> string
   type evar_constraint = Reduction.conv_pb * Environ.env * Term.constr * Term.constr
 
@@ -1485,7 +1482,7 @@ sig
     val empty : evar_map
     val from_env : Environ.env -> evar_map
     val find : evar_map -> Evar.t -> evar_info
-    val find_undefined : evar_map -> evar -> evar_info
+    val find_undefined : evar_map -> Evar.t -> evar_info
     val is_defined : evar_map -> Evar.t -> bool
     val mem : evar_map -> Evar.t -> bool
     val add : evar_map -> Evar.t -> evar_info -> evar_map
@@ -1513,7 +1510,7 @@ sig
     val fold_undefined : (Evar.t -> evar_info -> 'a -> 'a) -> evar_map -> 'a -> 'a
 
     val universe_context_set : evar_map -> Univ.ContextSet.t
-    val evar_ident : evar -> evar_map -> Names.Id.t option
+    val evar_ident : Evar.t -> evar_map -> Names.Id.t option
     val extract_all_conv_pbs : evar_map -> evar_map * evar_constraint list
     val universe_context : ?names:(Names.Id.t Loc.located) list -> evar_map ->
                            (Names.Id.t * Univ.Level.t) list * Univ.UContext.t
@@ -1948,7 +1945,7 @@ sig
          | ImpossibleCase
          | MatchingVar of matching_var_kind
          | VarInstance of Names.Id.t
-         | SubEvar of Evd.evar
+         | SubEvar of Evar.t
 end
 
 module Decl_kinds :
