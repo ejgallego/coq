@@ -15,8 +15,7 @@ open Util
 open Pp
 open Goptions
 open Names
-open Sorts
-open Constr
+open Term
 open Vars
 open Tacmach
 open Evd
@@ -155,7 +154,7 @@ let rec term_equal t1 t2 =
 open Hashset.Combine
 
 let rec hash_term = function
-  | Symb c -> combine 1 (hash c)
+  | Symb c -> combine 1 (Term.hash_constr c)
   | Product (s1, s2) -> combine3 2 (Sorts.hash s1) (Sorts.hash s2)
   | Eps i -> combine 3 (Id.hash i)
   | Appli (t1, t2) -> combine3 4 (hash_term t1) (hash_term t2)
@@ -233,7 +232,7 @@ type node =
 module Constrhash = Hashtbl.Make
   (struct type t = constr
 	  let equal = eq_constr_nounivs
-	  let hash = Constr.hash
+	  let hash = Term.hash_constr
    end)
 module Typehash = Constrhash
 

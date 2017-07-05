@@ -17,7 +17,7 @@ open CErrors
 open Util
 open Names
 open Nameops
-open Constr
+open Term
 open EConstr
 open Tacticals.New
 open Tacmach.New

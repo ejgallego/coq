@@ -8,6 +8,12 @@
 
 (* Warning, this file is ordered in linking order *)
 
+module Workaround =
+  struct
+    type constr = Term.constr
+    type types = Term.types
+  end
+
 (******************************************************************************)
 (* config                                                                     *)
 (******************************************************************************)
@@ -43,7 +49,6 @@ module UGraph = UGraph
 module Esubst = Esubst
 module Sorts = Sorts
 module Evar = Evar
-module Constr = Constr
 module Context = Context
 module Vars = Vars
 module Term = Term
