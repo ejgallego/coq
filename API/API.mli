@@ -642,8 +642,7 @@ sig
 
   type ('constr, 'types) prec_declaration = Names.Name.t array * 'types array * 'constr array
 
-  type existential_key = Evar.t
-  type 'constr pexistential = existential_key * 'constr array
+  type 'constr pexistential = Evar.t * 'constr array
   type cast_kind = Term.cast_kind =
                  | VMcast
                  | NATIVEcast
@@ -694,7 +693,7 @@ sig
      | Fix       of ('constr, 'types) pfixpoint
      | CoFix     of ('constr, 'types) pcofixpoint
      | Proj      of Names.Projection.t * 'constr
-  type existential = existential_key * constr array
+  type existential = Evar.t * constr array
   type rec_declaration = Names.Name.t array * constr array * constr array
   type fixpoint = (int array * int) * rec_declaration
   type cofixpoint = int * rec_declaration
@@ -1419,7 +1418,7 @@ end
 module Evd :
 sig
 
-  type evar = Term.existential_key
+  type evar = Evar.t
 
   val string_of_existential : Evar.t -> string
   type evar_constraint = Reduction.conv_pb * Environ.env * Term.constr * Term.constr
