@@ -1937,6 +1937,8 @@ sig
   val object_tag : obj -> string
 end
 
+type here_you_go = Foo of Summary.frozen
+
 module Summary :
 sig
 

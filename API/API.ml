@@ -267,3 +267,5 @@ module Vernacentries = Vernacentries
 (******************************************************************************)
 module Vernac_classifier = Vernac_classifier
 module Stm = Stm
+
+type here_you_go = Foo of Summary.frozen
