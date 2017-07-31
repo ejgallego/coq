@@ -223,6 +223,7 @@ module CLexer = CLexer
 module Pcoq = Pcoq
 module Egramml = Egramml
 (* Egramcoq *)
+module Metasyntax = Metasyntax
 
 (******************************************************************************)
 (* Tactics                                                                    *)
@@ -258,7 +259,6 @@ module Himsg = Himsg
 module ExplainErr = ExplainErr
 (* module Class *)
 module Locality = Locality
-module Metasyntax = Metasyntax
 (* module Auto_ind_decl *)
 module Search = Search
 (* module Indschemes *)

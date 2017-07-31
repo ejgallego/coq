@@ -4833,6 +4833,16 @@ sig
 
 end
 
+module Metasyntax :
+sig
+
+  val add_token_obj : string -> unit
+
+  type any_entry = AnyEntry : 'a Pcoq.Gram.entry -> any_entry
+  val register_grammar : string -> any_entry list -> unit
+
+end
+
 (************************************************************************)
 (* End of modules from parsing/                                         *)
 (************************************************************************)
@@ -5539,16 +5549,6 @@ sig
     val consume : unit -> bool option
   end
   val make_module_locality : bool option -> bool
-end
-
-module Metasyntax :
-sig
-
-  val add_token_obj : string -> unit
-
-  type any_entry = AnyEntry : 'a Pcoq.Gram.entry -> any_entry
-  val register_grammar : string -> any_entry list -> unit
-
 end
 
 module Search :
