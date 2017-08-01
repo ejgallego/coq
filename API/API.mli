@@ -3787,7 +3787,7 @@ sig
   | VernacTimeout of int * vernac_expr
   | VernacFail of vernac_expr
   | VernacSyntaxExtension of
-      obsolete_locality * (lstring * syntax_modifier list)
+      bool * obsolete_locality * (lstring * syntax_modifier list)
   | VernacOpenCloseScope of obsolete_locality * (bool * scope_name)
   | VernacDelimiters of scope_name * string option
   | VernacBindScope of scope_name * class_rawexpr list
@@ -4833,15 +4833,6 @@ sig
 
 end
 
-module Metasyntax :
-sig
-
-  val add_token_obj : string -> unit
-
-  type any_entry = AnyEntry : 'a Pcoq.Gram.entry -> any_entry
-  val register_grammar : string -> any_entry list -> unit
-end
-
 module G_vernac :
 sig
 
@@ -5565,6 +5556,16 @@ sig
     val consume : unit -> bool option
   end
   val make_module_locality : bool option -> bool
+end
+
+module Metasyntax :
+sig
+
+  val add_token_obj : string -> unit
+
+  type any_entry = AnyEntry : 'a Pcoq.Gram.entry -> any_entry
+  val register_grammar : string -> any_entry list -> unit
+
 end
 
 module Search :

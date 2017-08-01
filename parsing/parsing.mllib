@@ -3,7 +3,6 @@ CLexer
 Pcoq
 Egramml
 Egramcoq
-Metasyntax
 G_constr
 G_vernac
 G_prim
