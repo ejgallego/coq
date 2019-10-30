@@ -1,3 +1,14 @@
+## Changes between Coq 8.14 and Coq 8.15
+
+### Gramlib
+
+- Some duplicate grammar types have been removed, in particular:
+
+  + `integer` -> `int`
+  + `clause_dft_concl` -> `clause`
+  + `global` / `ref` -> `reference`
+  + `quant_hyp` -> `quantified_hypothesis`
+
 ## Changes between Coq 8.13 and Coq 8.14
 
 ### Build system and library infrastructure
@@ -96,7 +107,7 @@ Glob_term:
 ### Code formatting
 
 - The automatic code formatting tool `ocamlformat` is enabled now for
-  the micromega codebase. Version 0.13.0 is required. See
+  the micromega codebase. Version 0.14.0 is required. See
   `ocalmformat`'s documentation for more details on integration with
   your editor.
 
