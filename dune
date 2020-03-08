@@ -34,4 +34,12 @@
  (package coqide-server)
  (deps test-suite/summary.log))
 
+; For make compat
+(alias
+ (name all-src)
+ (deps
+  (source_tree user-contrib)
+  (source_tree theories)
+  (source_tree plugins)))
+
 ; (dirs (:standard _build_ci))

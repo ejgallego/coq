@@ -42,6 +42,7 @@ let usage () =
   eprintf "  -exclude-dir dir : skip subdirectories named 'dir' during -R/-Q search\n";
   eprintf "  -coqlib dir : set the coq standard library directory\n";
   eprintf "  -dyndep (opt|byte|both|no|var) : set how dependencies over ML modules are printed\n";
+  eprintf "  -output-dir dir : assume object files are placed under 'dir'\n";
   exit 1
 
 let split_period = Str.split (Str.regexp (Str.quote "."))
@@ -79,12 +80,17 @@ let rec parse = function
   | "-dyndep" :: "byte" :: ll -> option_dynlink := Byte; parse ll
   | "-dyndep" :: "both" :: ll -> option_dynlink := Both; parse ll
   | "-dyndep" :: "var" :: ll -> option_dynlink := Variable; parse ll
+  | "-output-dir" :: dir :: ll -> option_output_dir := Some dir; parse ll
   | ("-h"|"--help"|"-help") :: _ -> usage ()
   | f :: ll -> treat_file None f; parse ll
   | [] -> ()
 
 (* Exception to be raised by Envars *)
 exception CoqlibError of string
+
+let _ = CErrors.register_handler (function
+    | CoqlibError msg -> Some (Pp.str msg)
+    | _ -> None)
 
 let coqdep () =
   if Array.length Sys.argv < 2 then usage ();
@@ -120,6 +126,6 @@ let coqdep () =
 let _ =
   try
     coqdep ()
-  with CoqlibError msg ->
-    eprintf "*** Error: %s@\n%!" msg;
+  with exn ->
+    eprintf "*** Error: @[%a@]@\n%!" Pp.pp_with (CErrors.print exn);
     exit 1

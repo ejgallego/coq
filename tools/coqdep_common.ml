@@ -33,6 +33,7 @@ type dynlink = Opt | Byte | Both | No | Variable
 
 let option_noglob = ref false
 let option_dynlink = ref Both
+let option_output_dir = ref None
 let option_boot = ref false
 
 let norec_dirs = ref StrSet.empty
@@ -274,8 +275,9 @@ type dependency =
   | DepOther of string   (* filenames of dependencies, separated by spaces *)
 
 let string_of_dependency_list suffix_for_require deps =
+  let odir = Option.default "" !option_output_dir in
   let string_of_dep = function
-    | DepRequire basename -> basename ^ suffix_for_require
+    | DepRequire basename -> odir ^ basename ^ suffix_for_require
     | DepOther s -> s
     in
   String.concat " " (List.map string_of_dep deps)
@@ -374,17 +376,18 @@ let rec find_dependencies basename =
 let write_vos = ref false
 
 let coq_dependencies () =
+  let odir = Option.default "" !option_output_dir in
   List.iter
     (fun (name,_) ->
        let ename = escape name in
        let glob = if !option_noglob then "" else ename^".glob " in
        let deps = find_dependencies name in
-       printf "%s.vo %s%s.v.beautified %s.required_vo: %s.v %s\n" ename glob ename ename ename
+       printf "%s%s.vo %s%s%s%s.v.beautified %s%s.required_vo: %s.v %s\n" odir ename odir glob odir ename odir ename ename
         (string_of_dependency_list ".vo" deps);
-       printf "%s.vio: %s.v %s\n" ename ename
+       printf "%s%s.vio: %s.v %s\n" odir ename ename
          (string_of_dependency_list ".vio" deps);
        if !write_vos then
-         printf "%s.vos %s.vok %s.required_vos: %s.v %s\n" ename ename ename ename
+         printf "%s%s.vos %s%s.vok %s%s.required_vos: %s.v %s\n" odir ename odir ename odir ename ename
            (string_of_dependency_list ".vos" deps);
        printf "%!")
     (List.rev !vAccu)

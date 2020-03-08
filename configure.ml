@@ -1099,7 +1099,7 @@ let write_configml f =
      | NativeOndemand -> "NativeOn {ondemand=true}");
 
   let core_src_dirs = [ "config"; "lib"; "clib"; "kernel"; "library";
-                        "engine"; "pretyping"; "interp"; "gramlib"; "gramlib/.pack"; "parsing"; "proofs";
+                        "engine"; "pretyping"; "interp"; "gramlib"; "parsing"; "proofs";
                         "tactics"; "toplevel"; "printing"; "ide"; "stm"; "vernac" ] in
   let core_src_dirs = List.fold_left (fun acc core_src_subdir -> acc ^ "  \"" ^ core_src_subdir ^ "\";\n")
                                     ""
@@ -1158,6 +1158,7 @@ let write_makefile f =
   List.iter (fun (v,msg,_,_) -> pr "# %s: path for %s\n" v msg) install_dirs;
   List.iter (fun (v,_,dir,_) -> pr "%s=%S\n" v dir) install_dirs;
   pr "\n# Coq version\n";
+  pr "COQPREFIX=%s\n" ((function None -> "local" | Some v -> v) !prefs.prefix);
   pr "VERSION=%s\n" coq_version;
   pr "VERSION4MACOS=%s\n\n" coq_macos_version;
   pr "# Objective-Caml compile command\n";

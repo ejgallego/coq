@@ -1,3 +1,13 @@
+## Changes between Coq 8.13 and Coq 8.14
+
+### Build system and library infrastructure
+
+- ocamlfind library names `coq.*` have been renamed to `coq-core.*`.
+- Dune is now the build system for OCaml parts, object files live now in _build.
+  Some developer targets have changed or have been removed in favor of
+  Dune's counterparts.
+- As a consequence of the above the packing of plugins has changed.
+
 ## Changes between Coq 8.12 and Coq 8.13
 
 ### Code formatting
