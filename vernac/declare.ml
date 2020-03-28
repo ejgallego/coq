@@ -882,7 +882,8 @@ let add_hint local prg cst =
 
 let declare_obligation prg obl ~uctx ~types ~body =
   let poly = prg.prg_info.Info.poly in
-  let univs = UState.univ_entry ~poly uctx in
+  let univs = UState.check_univ_decl ~poly uctx prg.prg_info.Info.udecl in
+  (* let univs = UState.univ_entry ~poly uctx in *)
   let body = prg.prg_reduce body in
   let types = Option.map prg.prg_reduce types in
   match obl.obl_status with
