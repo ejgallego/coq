@@ -1039,6 +1039,8 @@ let subst_prog subst prg =
 let declare_definition ~pm prg =
   let varsubst = obligation_substitution true prg in
   let sigma = Evd.from_ctx prg.prg_uctx in
+  (* Format.eprintf "prg_ctx: @[%a@] @\n%!"
+   *   Pp.pp_with (UGraph.pr_universes (UState.pr_uctx_level prg.prg_uctx) (UState.ugraph prg.prg_uctx)); *)
   let body, types = subst_prog varsubst prg in
   let body, types = EConstr.(of_constr body, Some (of_constr types)) in
   let cinfo = { prg.prg_cinfo with CInfo.typ = types } in
