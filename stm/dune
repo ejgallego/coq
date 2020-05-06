@@ -3,4 +3,5 @@
  (synopsis "Coq's Document Manager and Proof Checking Scheduler")
  (public_name coq-core.stm)
  (wrapped false)
+ (instrumentation (backend bisect_ppx))
  (libraries sysinit))

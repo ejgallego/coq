@@ -63,7 +63,7 @@ RUN opam switch create "${COMPILER}+32bit" && eval $(opam env) && \
 
 # EDGE switch
 ENV COMPILER_EDGE="4.11.1" \
-    BASE_OPAM_EDGE="dune.2.5.1 dune-release.1.3.3"
+    BASE_OPAM_EDGE="dune.2.7.1 dune-release.1.4.0 bisect_ppx.2.6.0"
 
 # EDGE+flambda switch, we install CI_OPAM as to be able to use
 # `ci-template-flambda` with everything.

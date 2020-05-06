@@ -3,4 +3,5 @@
  (synopsis "Coq's Core Tactics [ML implementation]")
  (public_name coq-core.tactics)
  (wrapped false)
+ (instrumentation (backend bisect_ppx))
  (libraries printing))

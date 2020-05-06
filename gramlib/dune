@@ -1,4 +1,5 @@
 (library
  (name gramlib)
  (public_name coq-core.gramlib)
+ (instrumentation (backend bisect_ppx))
  (libraries coq-core.lib))

@@ -4,6 +4,7 @@
  (public_name coq-core.kernel)
  (wrapped false)
  (modules (:standard \ genOpcodeFiles uint63_31 uint63_63 float64_31 float64_63))
+ (instrumentation (backend bisect_ppx))
  (libraries lib byterun dynlink))
 
 (executable

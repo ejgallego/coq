@@ -3,4 +3,5 @@
  (synopsis "Coq's Syntactic Interpretation for AST [notations, implicits]")
  (public_name coq-core.interp)
  (wrapped false)
+ (instrumentation (backend bisect_ppx))
  (libraries zarith pretyping))
