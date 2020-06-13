@@ -596,15 +596,10 @@ let print_obj fmt (on, node) =
   Format.fprintf fmt "@[%a @[%a@]@]"
     print_obj_name on print_node node
 
-(* type node =
- *   | Leaf of Libobject.t
- *   | CompilingLibrary of Nametab.object_prefix
- *   | OpenedModule of is_type * export * Nametab.object_prefix * Summary.frozen
- *   | OpenedSection of Nametab.object_prefix * Summary.frozen *)
-
 let print_library_entry_stats fmt (on, node) =
   Format.fprintf fmt "%a: %d" print_obj (on, node) Obj.(reachable_words (magic node))
 
 let print_stats { comp_name; lib_stk; path_prefix } =
-  Format.eprintf " @[<v>%a@]@\n%!" (Format.pp_print_list print_library_entry_stats) lib_stk;
+  Format.eprintf " [libobject] mem reach: %d@\n%!" Obj.(reachable_words (magic lib_stk));
+  Format.eprintf "  @[<v>%a@]@\n%!" (Format.pp_print_list print_library_entry_stats) lib_stk;
   ()
