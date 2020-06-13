@@ -5,6 +5,7 @@ let print_st_stats { Vernacstate.parsing; system; lemmas; _ } =
   Format.eprintf " [parsing] mem reach: %d@\n%!" (Obj.reachable_words (Obj.magic parsing));
   Format.eprintf " [system ] mem reach: %d@\n%!" (Obj.reachable_words (Obj.magic system));
   Format.eprintf " [lemmas ] mem reach: %d@\n%!" (Obj.reachable_words (Obj.magic lemmas));
+  Vernacstate.System.print_stats system;
   ()
 
 let mk_vo_path ?(has_ml=false) unix_path coq_path implicit =
@@ -87,6 +88,8 @@ let compile ~vo_path ~ml_path ~in_file =
   let st, ldir = init_coq ~vo_path ~ml_path in_file in
   let pa = Pcoq.Parsable.make (Stream.of_channel f_in) in
   let st = cloop ~st pa in
+  (* Compact the heap, just in case. *)
+  Gc.compact ();
   print_st_stats st;
   let () = save_library ldir in_file in
   ()

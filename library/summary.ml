@@ -160,3 +160,5 @@ let (:=) = set
 end
 
 let dump = Dyn.dump
+
+let print_stats _ = ()

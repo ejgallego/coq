@@ -30,6 +30,7 @@ module System : sig
   (** Load / Dump provide unsafe but convenient state dumping from / to disk *)
   val dump : string -> unit
   val load : string -> unit
+  val print_stats : t -> unit
 
 end
 
