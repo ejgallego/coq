@@ -32,6 +32,7 @@ module System : sig
 
   val dump : string -> unit
   val load : string -> unit
+  val print_stats : t -> unit
 
   module Stm : sig
     val make_shallow : t -> t
@@ -66,6 +67,10 @@ end = struct
   let load s =
     unfreeze (System.with_magic_number_check (System.intern_state Coq_config.state_magic_number) s);
     Library.overwrite_library_filenames s
+
+  let print_stats (lib, summary) =
+    Lib.print_stats lib;
+    Summary.print_stats summary
 
   (* STM-specific state manipulations *)
   module Stm = struct
