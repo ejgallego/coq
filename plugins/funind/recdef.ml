@@ -953,7 +953,9 @@ let rec prove_le () =
                 ; New.observe_tac
                     (fun _ _ -> str "prove_le (rec)")
                     (prove_le ()) ]
-            with Not_found -> Tacticals.New.tclFAIL 0 (mt ())
+            with Not_found as exn ->
+              let _, info = Exninfo.capture exn in
+              Tacticals.New.tclFAIL ~info 0 (mt ())
           end ])
 
 let rec make_rewrite_list expr_info max = function

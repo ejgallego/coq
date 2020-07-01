@@ -466,13 +466,15 @@ let rwcltac ?under ?map_redex cl rdx dir sr =
   in
   let cvtac' =
     Proofview.tclORELSE cvtac begin function
-    | (PRtype_error e, _) ->
+    | (PRtype_error e, info) ->
       let error = Option.cata (fun (env, sigma, te) ->
           Pp.(fnl () ++ str "Type error was: " ++ Himsg.explain_pretype_error env sigma te))
           (Pp.mt ()) e in
       if occur_existential sigma0 (Tacmach.New.pf_concl gl)
-      then Tacticals.New.tclZEROMSG Pp.(str "Rewriting impacts evars" ++ error)
-      else Tacticals.New.tclZEROMSG Pp.(str "Dependent type error in rewrite of "
+      then
+        Tacticals.New.tclZEROMSG ~info Pp.(str "Rewriting impacts evars" ++ error)
+      else
+        Tacticals.New.tclZEROMSG ~info Pp.(str "Dependent type error in rewrite of "
         ++ pr_econstr_env env sigma0
           (EConstr.mkNamedLambda (make_annot pattern_id Sorts.Relevant) rdxt cl)
         ++ error)

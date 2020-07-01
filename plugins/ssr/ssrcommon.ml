@@ -1063,8 +1063,11 @@ let rec fst_prod red tac = Proofview.Goal.enter begin fun gl ->
   let concl = Proofview.Goal.concl gl in
   match EConstr.kind (Proofview.Goal.sigma gl) concl with
   | Prod (id,_,tgt) | LetIn(id,_,_,tgt) -> tac id.binder_name
-  | _ -> if red then Tacticals.New.tclZEROMSG (str"No product even after head-reduction.")
-         else Tacticals.New.tclTHEN Tactics.hnf_in_concl (fst_prod true tac)
+  | _ -> if red
+    then
+      let info = Exninfo.reify () in
+      Tacticals.New.tclZEROMSG ~info (str"No product even after head-reduction.")
+    else Tacticals.New.tclTHEN Tactics.hnf_in_concl (fst_prod true tac)
 end
 
 let introid ?(orig=ref Anonymous) name =
@@ -1446,11 +1449,15 @@ let tcl0G ~default tac =
   numgoals >>= fun ng -> if ng = 0 then tclUNIT default else tac
 
 let rec tclFIRSTa = function
-  | [] -> Tacticals.New.tclZEROMSG Pp.(str"No applicable tactic.")
+  | [] ->
+    let info = Exninfo.reify () in
+    Tacticals.New.tclZEROMSG ~info Pp.(str"No applicable tactic.")
   | tac :: rest -> tclORELSE tac (fun _ -> tclFIRSTa rest)
 
 let rec tclFIRSTi tac n =
-  if n < 0 then Tacticals.New.tclZEROMSG Pp.(str "tclFIRSTi")
+  if n < 0 then
+    let info = Exninfo.reify () in
+    Tacticals.New.tclZEROMSG ~info Pp.(str "tclFIRSTi")
   else tclORELSE (tclFIRSTi tac (n-1)) (fun _ -> tac n)
 
 let tacCONSTR_NAME ?name c =

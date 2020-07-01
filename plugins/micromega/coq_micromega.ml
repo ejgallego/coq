@@ -1857,9 +1857,11 @@ let micromega_gen parse_arith pre_process cnf spec dumpexpr prover tac =
         with
         | Unknown ->
           flush stdout;
-          Tacticals.New.tclFAIL 0 (Pp.str " Cannot find witness")
+          let info = Exninfo.reify () in
+          Tacticals.New.tclFAIL ~info 0 (Pp.str " Cannot find witness")
         | Model (m, e) ->
-          Tacticals.New.tclFAIL 0 (Pp.str " Cannot find witness")
+          let info = Exninfo.reify () in
+          Tacticals.New.tclFAIL ~info 0 (Pp.str " Cannot find witness")
         | Prf (ids, ff', res') ->
           let arith_goal, props, vars, ff_arith =
             make_goal_of_formula (genv, sigma) dumpexpr ff'
@@ -1905,10 +1907,13 @@ Tacticals.New.tclTHEN
                   ( EConstr.mkVar goal_name
                   , arith_args @ List.map EConstr.mkVar ids )))
       with
-      | Mfourier.TimeOut -> Tacticals.New.tclFAIL 0 (Pp.str "Timeout")
+      | Mfourier.TimeOut ->
+        let info = Exninfo.reify () in
+        Tacticals.New.tclFAIL ~info 0 (Pp.str "Timeout")
       | CsdpNotFound ->
         flush stdout;
-        Tacticals.New.tclFAIL 0
+        let info = Exninfo.reify () in
+        Tacticals.New.tclFAIL ~info 0
           (Pp.str
              ( " Skipping what remains of this tactic: the complexity of the \
                 goal requires "
@@ -1920,7 +1925,8 @@ Tacticals.New.tclTHEN
                 https://projects.coin-or.org/Csdp" ))
       | x ->
         if debug then
-          Tacticals.New.tclFAIL 0 (Pp.str (Printexc.get_backtrace ()))
+          let info = Exninfo.reify () in
+          Tacticals.New.tclFAIL ~info 0 (Pp.str (Printexc.get_backtrace ()))
         else raise x)
 
 let micromega_order_changer cert env ff =
@@ -1994,7 +2000,8 @@ let micromega_genr prover tac =
         with
         | Unknown | Model _ ->
           flush stdout;
-          Tacticals.New.tclFAIL 0 (Pp.str " Cannot find witness")
+          let info = Exninfo.reify () in
+          Tacticals.New.tclFAIL ~info 0 (Pp.str " Cannot find witness")
         | Prf (ids, ff', res') ->
           let ff, ids =
             formula_hyps_concl
@@ -2044,10 +2051,13 @@ let micromega_genr prover tac =
                 ; Tactics.exact_check
                     (EConstr.applist (EConstr.mkVar goal_name, arith_args)) ] ]
       with
-      | Mfourier.TimeOut -> Tacticals.New.tclFAIL 0 (Pp.str "Timeout")
+      | Mfourier.TimeOut ->
+        let info = Exninfo.reify () in
+        Tacticals.New.tclFAIL ~info 0 (Pp.str "Timeout")
       | CsdpNotFound ->
         flush stdout;
-        Tacticals.New.tclFAIL 0
+        let info = Exninfo.reify () in
+        Tacticals.New.tclFAIL ~info 0
           (Pp.str
              ( " Skipping what remains of this tactic: the complexity of the \
                 goal requires "

@@ -418,7 +418,9 @@ let autounfold db cls =
       | OnHyp (id, _, where) -> tac (Some (id, where))
       | OnConcl _ -> tac None) cls
     end
-  | exception UnknownDatabase dbname -> Tacticals.New.tclZEROMSG (str "Unknown database " ++ str dbname)
+  | exception (UnknownDatabase dbname as exn) ->
+    let _, info = Exninfo.capture exn in
+    Tacticals.New.tclZEROMSG ~info (str "Unknown database " ++ str dbname)
 
 let autounfold_tac db cls =
   Proofview.tclUNIT () >>= fun () ->

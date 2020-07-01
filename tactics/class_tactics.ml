@@ -209,12 +209,16 @@ let with_prods nprods h f =
         let ty = Retyping.get_type_of (Proofview.Goal.env gl) sigma h.hint_term in
         let diff = nb_prod sigma ty - nprods in
         if (>=) diff 0 then f (Some (diff, ty))
-        else Tacticals.New.tclZEROMSG (str"Not enough premisses")
+        else
+          let info = Exninfo.reify () in
+          Tacticals.New.tclZEROMSG ~info (str"Not enough premisses")
     end
   else Proofview.Goal.enter
          begin fun gl ->
          if Int.equal nprods 0 then f None
-         else Tacticals.New.tclZEROMSG (str"Not enough premisses") end
+         else
+           let info = Exninfo.reify () in
+           Tacticals.New.tclZEROMSG ~info (str"Not enough premisses") end
 
 let matches_pattern concl pat =
   let matches env sigma =
@@ -224,7 +228,8 @@ let matches_pattern concl pat =
        if Constr_matching.is_matching env sigma pat concl then
          Proofview.tclUNIT ()
        else
-         Tacticals.New.tclZEROMSG (str "pattern does not match")
+         let info = Exninfo.reify () in
+         Tacticals.New.tclZEROMSG ~info (str "pattern does not match")
   in
    Proofview.Goal.enter begin fun gl ->
      let env = Proofview.Goal.env gl in
@@ -1180,14 +1185,18 @@ let head_of_constr h c =
 let not_evar c =
   Proofview.tclEVARMAP >>= fun sigma ->
   match EConstr.kind sigma c with
-  | Evar _ -> Tacticals.New.tclFAIL 0 (str"Evar")
+  | Evar _ ->
+    let info = Exninfo.reify () in
+    Tacticals.New.tclFAIL ~info 0 (str"Evar")
   | _ -> Proofview.tclUNIT ()
 
 let is_ground c =
   let open Tacticals.New in
   Proofview.tclEVARMAP >>= fun sigma ->
   if Evarutil.is_ground_term sigma c then tclIDTAC
-  else tclFAIL 0 (str"Not ground")
+  else
+    let info = Exninfo.reify () in
+    tclFAIL ~info 0 (str"Not ground")
 
 let autoapply c i =
   let open Proofview.Notations in

@@ -332,7 +332,8 @@ let rec proof_tac p : unit Proofview.tactic =
              Tacticals.New.tclFIRST
                [Tacticals.New.tclTHEN lemma2 (proof_tac p2);
                 reflexivity;
-                Tacticals.New.tclZEROMSG
+                let info = Exninfo.reify () in
+                Tacticals.New.tclZEROMSG ~info
                     (Pp.str
                        "I don't know how to handle dependent equality")]])))
   | Inject (prf,cstr,nargs,argind) ->
@@ -427,7 +428,9 @@ let cc_tactic depth additionnal_terms =
     let _ = debug_congruence (fun () -> Pp.str "Computation completed.") in
     let uf=forest state in
     match sol with
-      None -> Tacticals.New.tclFAIL 0 (str "congruence failed")
+      None ->
+      let info = Exninfo.reify () in
+      Tacticals.New.tclFAIL ~info 0 (str "congruence failed")
     | Some reason ->
       debug_congruence (fun () -> Pp.str "Goal solved, generating proof ...");
       match reason with
@@ -458,7 +461,8 @@ let cc_tactic depth additionnal_terms =
                         end ++
                       fnl() ++ str "  replacing metavariables by arbitrary terms")
         in
-        Tacticals.New.tclFAIL 0 msg
+        let info = Exninfo.reify () in
+        Tacticals.New.tclFAIL ~info 0 msg
       | Contradiction dis ->
         let env = Proofview.Goal.env gl in
         let p=build_proof env sigma uf (`Prove (dis.lhs,dis.rhs)) in
@@ -474,7 +478,6 @@ let cc_tactic depth additionnal_terms =
           let idb = EConstr.of_constr idb in
           convert_to_hyp_tac ida ta idb tb p
   end
-
 
 let congruence_tac depth l =
   Tacticals.New.tclTHEN (Tacticals.New.tclREPEAT introf) (cc_tactic depth l)

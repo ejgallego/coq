@@ -786,8 +786,10 @@ let rec find_a_destructable_match sigma t =
 
 let destauto t =
   Proofview.tclEVARMAP >>= fun sigma ->
-  try find_a_destructable_match sigma t;
-    Tacticals.New.tclZEROMSG (str "No destructable match found")
+  try
+    find_a_destructable_match sigma t;
+    let info = Exninfo.reify () in
+    Tacticals.New.tclZEROMSG ~info (str "No destructable match found")
   with Found tac -> tac
 
 let destauto_in id =
@@ -832,7 +834,11 @@ END
 TACTIC EXTEND constr_eq_nounivs
 | [ "constr_eq_nounivs" constr(x) constr(y) ] -> {
     Proofview.tclEVARMAP >>= fun sigma ->
-    if eq_constr_nounivs sigma x y then Proofview.tclUNIT () else Tacticals.New.tclFAIL 0 (str "Not equal") }
+    if eq_constr_nounivs sigma x y
+    then Proofview.tclUNIT ()
+    else
+      let info = Exninfo.reify () in
+      Tacticals.New.tclFAIL ~info 0 (str "Not equal") }
 END
 
 TACTIC EXTEND is_evar
@@ -840,7 +846,9 @@ TACTIC EXTEND is_evar
     Proofview.tclEVARMAP >>= fun sigma ->
     match EConstr.kind sigma x with
       | Evar _ -> Proofview.tclUNIT ()
-      | _ -> Tacticals.New.tclFAIL 0 (str "Not an evar")
+      | _ ->
+        let info = Exninfo.reify () in
+        Tacticals.New.tclFAIL ~info 0 (str "Not an evar")
    }
 END
 
@@ -849,7 +857,9 @@ TACTIC EXTEND has_evar
   Proofview.tclEVARMAP >>= fun sigma ->
   if Evarutil.has_undefined_evars sigma x
   then Proofview.tclUNIT ()
-  else Tacticals.New.tclFAIL 0 (str "No evars")
+  else
+    let info = Exninfo.reify () in
+    Tacticals.New.tclFAIL ~info 0 (str "No evars")
 }
 END
 
@@ -858,7 +868,9 @@ TACTIC EXTEND is_hyp
   Proofview.tclEVARMAP >>= fun sigma ->
   match EConstr.kind sigma x with
     | Var _ ->  Proofview.tclUNIT ()
-    | _ -> Tacticals.New.tclFAIL 0 (str "Not a variable or hypothesis") }
+    | _ ->
+      let info = Exninfo.reify () in
+      Tacticals.New.tclFAIL ~info 0 (str "Not a variable or hypothesis") }
 END
 
 TACTIC EXTEND is_fix
@@ -866,7 +878,9 @@ TACTIC EXTEND is_fix
   Proofview.tclEVARMAP >>= fun sigma ->
   match EConstr.kind sigma x with
     | Fix _ -> Proofview.tclUNIT ()
-    | _ -> Tacticals.New.tclFAIL 0 (Pp.str "not a fix definition") }
+    | _ ->
+      let info = Exninfo.reify () in
+      Tacticals.New.tclFAIL ~info 0 (Pp.str "not a fix definition") }
 END
 
 TACTIC EXTEND is_cofix
@@ -874,7 +888,9 @@ TACTIC EXTEND is_cofix
   Proofview.tclEVARMAP >>= fun sigma ->
   match EConstr.kind sigma x with
     | CoFix _ -> Proofview.tclUNIT ()
-    | _ -> Tacticals.New.tclFAIL 0 (Pp.str "not a cofix definition") }
+    | _ ->
+      let info = Exninfo.reify () in
+      Tacticals.New.tclFAIL ~info 0 (Pp.str "not a cofix definition") }
 END
 
 TACTIC EXTEND is_ind
@@ -882,7 +898,9 @@ TACTIC EXTEND is_ind
   Proofview.tclEVARMAP >>= fun sigma ->
   match EConstr.kind sigma x with
     | Ind _ -> Proofview.tclUNIT ()
-    | _ -> Tacticals.New.tclFAIL 0 (Pp.str "not an (co)inductive datatype") }
+    | _ ->
+      let info = Exninfo.reify () in
+      Tacticals.New.tclFAIL ~info 0 (Pp.str "not an (co)inductive datatype") }
 END
 
 TACTIC EXTEND is_constructor
@@ -890,7 +908,9 @@ TACTIC EXTEND is_constructor
   Proofview.tclEVARMAP >>= fun sigma ->
   match EConstr.kind sigma x with
     | Construct _ -> Proofview.tclUNIT ()
-    | _ -> Tacticals.New.tclFAIL 0 (Pp.str "not a constructor") }
+    | _ ->
+      let info = Exninfo.reify () in
+      Tacticals.New.tclFAIL ~info 0 (Pp.str "not a constructor") }
 END
 
 TACTIC EXTEND is_proj
@@ -898,7 +918,9 @@ TACTIC EXTEND is_proj
   Proofview.tclEVARMAP >>= fun sigma ->
   match EConstr.kind sigma x with
     | Proj _ -> Proofview.tclUNIT ()
-    | _ -> Tacticals.New.tclFAIL 0 (Pp.str "not a primitive projection") }
+    | _ ->
+      let info = Exninfo.reify () in
+      Tacticals.New.tclFAIL ~info 0 (Pp.str "not a primitive projection") }
 END
 
 TACTIC EXTEND is_const
@@ -906,7 +928,9 @@ TACTIC EXTEND is_const
   Proofview.tclEVARMAP >>= fun sigma ->
   match EConstr.kind sigma x with
     | Const _ -> Proofview.tclUNIT ()
-    | _ -> Tacticals.New.tclFAIL 0 (Pp.str "not a constant") }
+    | _ ->
+      let info = Exninfo.reify () in
+      Tacticals.New.tclFAIL ~info 0 (Pp.str "not a constant") }
 END
 
 (* Command to grab the evars left unresolved at the end of a proof. *)
@@ -1047,8 +1071,9 @@ let guard tst =
   if run_test tst then
     Proofview.tclUNIT ()
   else
+    let info = Exninfo.reify () in
     let msg = Pp.(str"Condition not satisfied:"++ws 1++(pr_itest tst)) in
-    Tacticals.New.tclZEROMSG msg
+    Tacticals.New.tclZEROMSG ~info msg
 
 }
 
