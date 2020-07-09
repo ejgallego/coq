@@ -75,7 +75,7 @@ let rec proj_symbol : type a b c. (a, b, c) ty_user_symbol -> (a, b, c) genarg_t
 
 (** Vernac grammar extensions *)
 
-let vernac_exts = ref []
+let vernac_exts = Summary.ref ~name:"vernac_exts" []
 
 let get_extend_vernac_rule (s, i) =
   try
