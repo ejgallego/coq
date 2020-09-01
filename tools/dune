@@ -16,13 +16,6 @@
  (libraries coq-core.lib))
 
 (executable
- (name coqworkmgr)
- (public_name coqworkmgr)
- (package coq-core)
- (modules coqworkmgr)
- (libraries coq-core.stm))
-
-(executable
  (name coqdep)
  (public_name coqdep)
  (package coq-core)
