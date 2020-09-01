@@ -29,9 +29,13 @@ let dirpath_of_file f =
   let ldir = Libnames.add_dirpath_suffix ldir0 id in
   ldir
 
-let fb_handler = function
+let fb_handler = let open Feedback in function
   | Feedback.{ contents; _ } ->
     match contents with
+    | Feedback.Message(Debug,_,_)
+    | Feedback.Message(Info,_,_)
+    | Feedback.Message(Notice,_,_) ->
+      ()
     | Feedback.Message(_lvl,_loc,msg)->
       Format.printf "%s@\n%!" Pp.(string_of_ppcmds msg)
     | _ -> ()
@@ -44,11 +48,12 @@ let load_objs libs =
   in
   List.(iter rq_file (rev libs))
 
-let require_libs = ["Coq.Init.Prelude", None, Some false]
+let dft_require_libs = ["Coq.Init.Prelude", None, Some false]
 
-let init_coq ~vo_path ~ml_path in_file =
+let init_coq ~vo_path ~ml_path ~require_libs in_file =
   Lib.init ();
   Global.set_engagement Declarations.PredicativeSet;
+  Global.set_indices_matter false;
   Flags.set_native_compiler false;
   Global.set_native_compiler false;
   Safe_typing.allow_delayed_constants := false;
@@ -83,37 +88,48 @@ let save_library ldir in_file =
   let todo_proofs = Library.ProofsTodoNone in
   Library.save_library_to todo_proofs ~output_native_objects:false ldir out_vo (Global.opaque_tables ())
 
-let compile ~vo_path ~ml_path ~in_file =
+let compile ~vo_path ~ml_path ~require_libs ~in_file =
   let f_in = open_in in_file in
-  let st, ldir = init_coq ~vo_path ~ml_path in_file in
+  let st, ldir = init_coq ~vo_path ~ml_path ~require_libs in_file in
   let pa = Pcoq.Parsable.make (Stream.of_channel f_in) in
-  let st = cloop ~st pa in
+  let _st = cloop ~st pa in
   (* Compact the heap, just in case. *)
   Gc.compact ();
-  print_st_stats st;
+  (* print_st_stats st; *)
   let () = save_library ldir in_file in
   ()
 
-let rec parse_args (args : string list) vo_acc ml_acc : _ * _ * string =
+let rec parse_args (args : string list) vo_acc ml_acc init boot
+  : _ * _ * _ * _ * string =
   match args with
   | [] -> CErrors.user_err (Pp.str "parse args error: missing argument")
+  | "-noinit" :: rem ->
+    parse_args rem vo_acc ml_acc false boot
+  | "-boot" :: rem ->
+    parse_args rem vo_acc ml_acc init true
+  | "-q" :: rem ->
+    parse_args rem vo_acc ml_acc init boot
   | (("-Q" | "-R") as impl_str) :: d :: p :: rem ->
     let implicit = String.equal impl_str "-R" in
     let vo_acc = mk_vo_path d p implicit :: vo_acc in
-    parse_args rem vo_acc ml_acc
+    parse_args rem vo_acc ml_acc init boot
   | "-I" :: d :: rem ->
     let ml_acc = d :: ml_acc in
-    parse_args rem vo_acc ml_acc
+    parse_args rem vo_acc ml_acc init boot
   | [file] ->
-    List.rev vo_acc, List.rev ml_acc, file
+    List.rev vo_acc, List.rev ml_acc, init, boot, file
   | args ->
     let args_msg = String.concat " " args in
     CErrors.user_err Pp.(str "parse args error, too many arguments: " ++ str args_msg)
 
 let () =
+  Flags.quiet := true;
+  System.trust_file_cache := true;
   try
-    let vo_path, ml_path, in_file =
-      parse_args (List.tl @@ Array.to_list Sys.argv) default_vo_load_path [] in
-    compile ~vo_path ~ml_path ~in_file
+    let vo_path, ml_path, init, boot, in_file =
+      parse_args (List.tl @@ Array.to_list Sys.argv) [] [] true false in
+    let require_libs = if init then dft_require_libs else [] in
+    let vo_path = if boot then vo_path else default_vo_load_path @ vo_path in
+    compile ~vo_path ~ml_path ~require_libs ~in_file
   with exn ->
     Format.eprintf "Error: @[%a@]@\n%!" Pp.pp_with (CErrors.print exn)
