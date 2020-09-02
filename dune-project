@@ -1,6 +1,6 @@
-(lang dune 2.5)
+(lang dune 2.8)
 (name coq)
-(using coq 0.2)
+(using coq 0.3)
 
 (formatting
  (enabled_for ocaml))
@@ -98,7 +98,6 @@ development of interactive proofs."))
  (name coq-doc)
  (license "OPL-1.0")
  (depends
-  (dune (and :build (>= 2.5.0)))
   (conf-python-3 :build)
   (coq (and :build (= :version))))
  (synopsis "The Coq Proof Assistant --- Reference Manual")

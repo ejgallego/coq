@@ -215,6 +215,16 @@ enables stronger compiler optimizations.
 descriptions in the `dune-project` file; see Dune's manual for more
 details.
 
+## Native compute and native compilation
+
+Dune provides experimental support for native compilation, enabled
+using the `(mode native)` field in the `(coq.theory ...)`
+stanza. Given that native compilation is quite expensive, Dune won't
+compile native objects if the `dev` profile is the active one.
+
+This is a preliminary build setup and will change in the future as
+native object files will be generated separately.
+
 ## Stanzas
 
 `dune` files contain the so-called "stanzas", that may declare:
