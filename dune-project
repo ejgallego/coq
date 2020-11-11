@@ -1,4 +1,4 @@
-(lang dune 2.5)
+(lang dune 2.7)
 (name coq)
 (using coq 0.2)
 

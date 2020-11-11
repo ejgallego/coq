@@ -1,0 +1,6 @@
+(rule
+ (targets utest_rules.sexp)
+ (mode promote)
+ (action (run ./tools/utest_rules.exe)))
+
+(include utest_rules.sexp)
