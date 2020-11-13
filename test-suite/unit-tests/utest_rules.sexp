@@ -5,7 +5,7 @@
  
  (rule
   (targets pp_big_vect.ml.log)
-  (action (run ./pp_big_vect.exe)))
+  (action (with-accepted-exit-codes 0 (run ./pp_big_vect.exe))))
  
  (alias
   (name runtest) (deps (glob_files *.ml.log))))
@@ -18,10 +18,10 @@
  
  (rule
   (targets unicode_tests.ml.log)
-  (action (run ./unicode_tests.exe)))
+  (action (with-accepted-exit-codes 0 (run ./unicode_tests.exe))))
  (rule
   (targets inteq.ml.log)
-  (action (run ./inteq.exe)))
+  (action (with-accepted-exit-codes 0 (run ./inteq.exe))))
  
  (alias
   (name runtest) (deps (glob_files *.ml.log))))
@@ -33,7 +33,7 @@
  
  (rule
   (targets proof_diffs_test.ml.log)
-  (action (run ./proof_diffs_test.exe)))
+  (action (with-accepted-exit-codes 0 (run ./proof_diffs_test.exe))))
  
  (alias
   (name runtest) (deps (glob_files *.ml.log))))

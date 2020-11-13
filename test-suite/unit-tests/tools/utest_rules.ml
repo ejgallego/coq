@@ -21,7 +21,7 @@ let gen_prelude ~libraries fmt files =
 let output_log_rule fmt file =
   let exe = replace_ext ~ext:".exe" file in
   fprintf fmt
-    "(rule@\n (targets %s.log)@\n (action (run ./%s)))"
+    "(rule@\n (targets %s.log)@\n (action (with-accepted-exit-codes 0 (run ./%s))))"
     file exe
 
 let gen_postlude fmt () =
