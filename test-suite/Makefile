@@ -115,12 +115,12 @@ COMPLEXITY := $(if $(bogomips),complexity)
 BUGS := bugs/opened bugs/closed
 INTERACTIVE := interactive
 UNIT_TESTS := unit-tests
-VSUBSYSTEMS := prerequisite success failure $(BUGS) output output-coqtop \
-  output-modulo-time $(INTERACTIVE) micromega $(COMPLEXITY) modules stm \
+VSUBSYSTEMS := prerequisite success failure $(BUGS) output \
+  output-modulo-time $(INTERACTIVE) micromega $(COMPLEXITY) modules \
   coqdoc ssr $(wildcard primitive/*) ltac2
 
 # All subsystems
-SUBSYSTEMS := $(VSUBSYSTEMS) misc bugs ide vio coqchk output-coqchk coqwc coq-makefile tools $(UNIT_TESTS)
+SUBSYSTEMS := $(VSUBSYSTEMS) misc bugs coqchk output-coqchk coqwc coq-makefile tools $(UNIT_TESTS)
 
 .csdp.cache: .csdp.cache.test-suite
 	cp $< $@
@@ -178,6 +178,8 @@ summary_dir = echo $(1); find $(2) -name '*.log' -print0 | xargs -0 -n 1 tail -n
 
 .PHONY: summary summary.log
 
+# $(call summary_dir, "Output tests with coqtop", output-coqtop);
+
 summary:
 	@{ \
 	  $(call summary_dir, "Preparing tests", prerequisite); \
@@ -185,7 +187,6 @@ summary:
 	  $(call summary_dir, "Failure tests", failure); \
 	  $(call summary_dir, "Bugs tests", bugs); \
 	  $(call summary_dir, "Output tests", output); \
-	  $(call summary_dir, "Output tests with coqtop", output-coqtop); \
 	  $(call summary_dir, "Output (modulo time changes) tests", output-modulo-time); \
 	  $(call summary_dir, "Interactive tests", interactive); \
 	  $(call summary_dir, "Micromega tests", micromega); \
@@ -193,10 +194,7 @@ summary:
 	  $(call summary_dir, "Complexity tests", complexity); \
 	  $(call summary_dir, "Module tests", modules); \
 	  $(call summary_dir, "Primitive tests", primitive); \
-	  $(call summary_dir, "STM tests", stm); \
 	  $(call summary_dir, "SSR tests", ssr); \
-	  $(call summary_dir, "IDE tests", ide); \
-	  $(call summary_dir, "VI tests", vio); \
 	  $(call summary_dir, "Coqchk tests", coqchk); \
 	  $(call summary_dir, "Output tests with coqchk", output-coqchk); \
 	  $(call summary_dir, "Coqwc tests", coqwc); \
@@ -324,7 +322,7 @@ unit-tests: $(UNIT_LOGFILES)
 # Build executable, run it to generate log file
 unit-tests/%.ml.log: unit-tests/%.ml unit-tests/src/$(UNIT_LINK)
 	$(SHOW) 'TEST      $<'
-	$(HIDE)$(OCAMLBEST) -linkall -linkpkg -package coq-core.toplevel,ounit2 \
+	$(HIDE)$(OCAMLBEST) -linkall -linkpkg -package coq-core.vernac,ounit2 \
 	     -I unit-tests/src $(UNIT_LINK) $< -o $<.test;
 	$(HIDE)./$<.test
 
@@ -366,32 +364,6 @@ $(addsuffix .log,$(wildcard ssr/*.v success/*.v micromega/*.v modules/*.v primit
 	@if ! grep -q -F "Error!" $@; then echo "CHECK     $<"; fi
 	$(HIDE)if ! grep -q -F "Error!" $@; then { \
 	  $(coqchk) -silent $(call get_set_impredicativity,$<) $(if $(findstring modules/,$<),-R modules Mods -norec Mods.$(shell basename $< .v),-Q $(shell dirname $<) "" -norec $(shell basename $< .v)) 2>&1; R=$$?; \
-	  if [ $$R != 0 ]; then \
-	    echo $(log_failure); \
-	    echo "    $<...could not be checked (Error!)" ; \
-	    $(FAIL); \
-	  fi; \
-	} > "$(shell dirname $<)/$(shell basename $< .v).chk.log"; fi
-
-stm: $(wildcard stm/*.v:%.v=%.v.log)
-$(addsuffix .log,$(wildcard stm/*.v)): %.v.log: %.v
-	@echo "TEST      $< $(call get_coq_prog_args_in_parens,"$<")"
-	$(HIDE){ \
-	  echo $(call log_intro,$<); \
-	  $(coqc) "$<" $(call get_coq_prog_args,"$<") -async-proofs on \
-	    $$opts 2>&1; R=$$?; times; \
-	  if [ $$R = 0 ]; then \
-	    echo $(log_success); \
-	    echo "    $<...Ok"; \
-	  else \
-	    echo $(log_failure); \
-	    echo "    $<...Error! (should be accepted)"; \
-	    $(FAIL); \
-	  fi; \
-	} > "$@"
-	@if ! grep -q -F "Error!" $@; then echo "CHECK     $<"; fi
-	$(HIDE)if ! grep -q -F "Error!" $@; then { \
-	  $(coqchk) -silent -Q $(shell dirname $<) "" -norec $(shell basename $< .v) 2>&1; R=$$?; \
 	  if [ $$R != 0 ]; then \
 	    echo $(log_failure); \
 	    echo "    $<...could not be checked (Error!)" ; \
@@ -671,45 +643,6 @@ $(patsubst %.sh,%.log,$(wildcard misc/*.sh)): %.log: %.sh $(PREREQUISITELOG)
 	  export coqdep="eval $(coqdep)"; \
 	  "$<" 2>&1; R=$$?; times; \
 	  if [ $$R = 0 ]; then \
-	    echo $(log_success); \
-	    echo "    $<...Ok"; \
-	  else \
-	    echo $(log_failure); \
-	    echo "    $<...Error!"; \
-	    $(FAIL); \
-	  fi; \
-	} > "$@"
-
-# IDE : some tests of backtracking for coqtop -ideslave
-
-ide : $(patsubst %.fake,%.fake.log,$(wildcard ide/*.fake))
-
-%.fake.log : %.fake
-	@echo "TEST      $<"
-	$(HIDE){ \
-	  echo $(call log_intro,$<); \
-	  $(BIN)fake_ide "$<" "-q -async-proofs on -async-proofs-tactic-error-resilience off -async-proofs-command-error-resilience off $(call get_coq_prog_args,"$<")" 2>&1; \
-	  if [ $$? = 0 ]; then \
-	    echo $(log_success); \
-	    echo "    $<...Ok"; \
-	  else \
-	    echo $(log_failure); \
-	    echo "    $<...Error!"; \
-	    $(FAIL); \
-	  fi; \
-	} > "$@"
-
-# vio compilation
-
-vio: $(patsubst %.v,%.vio.log,$(wildcard vio/*.v))
-
-%.vio.log:%.v
-	@echo "TEST      $<"
-	$(HIDE){ \
-	  $(coqc) -vio -R vio vio $* 2>&1 && \
-	  $(coqc) -R vio vio -vio2vo $*.vio 2>&1 && \
-	  $(coqchk) -R vio vio -norec $(subst /,.,$*) 2>&1; \
-	  if [ $$? = 0 ]; then \
 	    echo $(log_success); \
 	    echo "    $<...Ok"; \
 	  else \
