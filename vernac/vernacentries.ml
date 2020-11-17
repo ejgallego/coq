@@ -2088,11 +2088,15 @@ let translate_vernac ?loc ~atts v = let open Vernacextend in match v with
   | VernacUndoTo _
   | VernacResetName _
   | VernacResetInitial
-  | VernacBack _
-  | VernacAbort _ ->
+  | VernacBack _ ->
     anomaly (str "type_vernac")
+
   | VernacLoad _ ->
     anomaly (str "Load is not supported recursively")
+
+  (* Just drop the proof, what to do about the obligations state tho? *)
+  | VernacAbort _ ->
+    VtCloseProof (fun ~lemma ~pm -> pm)
 
   (* Syntax *)
   | VernacSyntaxExtension (infix, sl) ->
