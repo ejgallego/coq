@@ -54,7 +54,6 @@ type 'a assignment = [ `Val of 'a | `Exn of Exninfo.iexn | `Comp of 'a computati
 (* Val is not necessarily a final state, so the
    computation restarts from the state stocked into Val *)
 and 'a comp =
-  | Delegated of (unit -> unit)
   | Closure of (unit -> 'a)
   | Val of 'a
   | Exn of Exninfo.iexn  (* Invariant: this exception is always "fixed" as in fix_exn *)
@@ -81,49 +80,30 @@ type 'a value = [ `Val of 'a | `Exn of Exninfo.iexn  ]
 
 let is_over kx = let _, _, _, x = get kx in match !x with
   | Val _ | Exn _ -> true
-  | Closure _ | Delegated _ -> false
+  | Closure _ -> false
 
 let is_val kx = let _, _, _, x = get kx in match !x with
   | Val _ -> true
-  | Exn _ | Closure _ | Delegated _ -> false
+  | Exn _ | Closure _ -> false
 
 let is_exn kx = let _, _, _, x = get kx in match !x with
   | Exn _ -> true
-  | Val _ | Closure _ | Delegated _ -> false
+  | Val _ | Closure _ -> false
 
 let peek_val kx = let _, _, _, x = get kx in match !x with
   | Val v -> Some v
-  | Exn _ | Closure _ | Delegated _ -> None
+  | Exn _ | Closure _ -> None
 
 let uuid kx = let _, id, _, _ = get kx in id
 
 let from_val v = create ~fix_exn:id (Val v)
 
-let create_delegate ?(blocking=true) ~name fix_exn =
-  let assignment signal ck = fun v ->
-    let _, _, fix_exn, c = get ck in
-    assert (match !c with Delegated _ -> true | _ -> false);
-    begin match v with
-    | `Val v -> c := Val v
-    | `Exn e -> c := Exn (fix_exn e)
-    | `Comp f -> let _, _, _, comp = get f in c := !comp end;
-    signal () in
-  let wait, signal =
-    if not blocking then (fun () -> raise (NotReady name)), ignore else
-    let lock = Mutex.create () in
-    let cond = Condition.create () in
-    (fun () -> Mutex.lock lock; Condition.wait cond lock; Mutex.unlock lock),
-    (fun () -> Mutex.lock lock; Condition.broadcast cond; Mutex.unlock lock) in
-  let ck = create ~name ~fix_exn (Delegated wait) in
-  ck, assignment signal ck
-
 (* TODO: get rid of try/catch to be stackless *)
-let rec compute ck : 'a value =
+let compute ck : 'a value =
   let _, _, fix_exn, c = get ck in
   match !c with
   | Val x -> `Val x
   | Exn (e, info) -> `Exn (e, info)
-  | Delegated wait -> wait (); compute ck
   | Closure f ->
       try
         let data = f () in
@@ -142,7 +122,7 @@ let force x = match compute x with
 let chain ck f =
   let name, uuid, fix_exn, c = get ck in
   create ~uuid ~name ~fix_exn (match !c with
-  | Closure _ | Delegated _ -> Closure (fun () -> f (force ck))
+  | Closure _ -> Closure (fun () -> f (force ck))
   | Exn _ as x -> x
   | Val v -> Val (f v))
 
@@ -184,7 +164,6 @@ let print f kx =
     else str "[" ++ int uid ++ str":" ++ str name ++ str "]"
   in
   match !x with
-  | Delegated _ -> str "Delegated" ++ uid
   | Closure _ -> str "Closure" ++ uid
   | Val x -> str "PureVal" ++ uid ++ spc () ++ hov 0 (f x)
   | Exn (e, _) -> str "Exn"  ++ uid ++ spc () ++ hov 0 (str (Printexc.to_string e))

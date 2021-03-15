@@ -21,17 +21,16 @@ let new_counter ~name a ~incr ~build =
   assert(not (List.mem_assoc name !counters));
   let data = ref (ref a) in
   counters := (name, Obj.repr data) :: !counters;
-  let m = Mutex.create () in
   let mk_thsafe_local_getter f () =
     (* - slaves must use a remote counter getter, not this one! *)
     (* - in the main process there is a race condition between slave
          managers (that are threads) and the main thread, hence the mutex *)
     if Flags.async_proofs_is_worker () then
       CErrors.anomaly(Pp.str"Slave processes must install remote counters.");
-    Mutex.lock m; let x = f () in Mutex.unlock m;
+    let x = f () in
     build x in
   let mk_thsafe_remote_getter f () =
-    Mutex.lock m; let x = f () in Mutex.unlock m; x in
+    let x = f () in x in
   let getter = ref(mk_thsafe_local_getter (fun () -> !data := incr !!data; !!data)) in
   let installer f =
     if not (Flags.async_proofs_is_worker ()) then
