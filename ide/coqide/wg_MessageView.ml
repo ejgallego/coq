@@ -77,7 +77,7 @@ let message_view () : message_view =
     in
     let mark = `MARK mark in
     let width = Ideutils.textview_width view in
-    Ideutils.insert_xml ~mark buffer ~tags (Richpp.richpp_of_pp width msg);
+    Ideutils.insert_xml ~mark buffer ~tags (Richpp.richpp_of_pp ~width msg);
     buffer#insert ~iter:(buffer#get_iter_at_mark mark) "\n"
   in
 
