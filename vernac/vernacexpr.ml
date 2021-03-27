@@ -298,6 +298,8 @@ type reference_or_constr =
   | HintsReference of Libnames.qualid
   | HintsConstr of Constrexpr.constr_expr
 
+type ml_loader = CoqLoader | Findlib
+
 type hints_expr =
   | HintsResolve of (hint_info_expr * bool * reference_or_constr) list
   | HintsResolveIFF of bool * Libnames.qualid list * int option
@@ -394,7 +396,7 @@ type nonrec vernac_expr =
 
   | VernacRemoveLoadPath of string
   | VernacAddMLPath of string
-  | VernacDeclareMLModule of string list
+  | VernacDeclareMLModule of { loader : ml_loader; modules : string list }
   | VernacChdir of string option
 
   (* State management *)

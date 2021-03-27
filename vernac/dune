@@ -3,6 +3,6 @@
  (synopsis "Coq's Vernacular Language")
  (public_name coq-core.vernac)
  (wrapped false)
- (libraries tactics parsing))
+ (libraries findlib.dynload tactics parsing))
 
 (coq.pp (modules g_proofs g_vernac))
