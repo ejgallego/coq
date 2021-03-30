@@ -8,9 +8,5 @@
 ##         #     (see LICENSE file for the text of the license)         ##
 ##########################################################################
 
-# The default build system is make-based one.
-ifndef COQ_USE_DUNE
-include Makefile.make
-else
+# The default build system is dune-based one.
 include Makefile.dune
-endif
