@@ -12,7 +12,14 @@
 
 (** WARNING: TO BE UPDATED WHEN MODIFIED! *)
 
-let protocol_version = "20200911"
+(** Protocol changelog:
+
+  - 20210413: the "verbose" parameter in add call is now ignored; no
+    changes to the in-wire representation.
+
+*)
+
+let protocol_version = "20210413"
 
 type msg_format = Richpp of int | Ppcmds
 let msg_format = ref (Richpp 72)
