@@ -5,6 +5,10 @@
 (formatting
  (enabled_for ocaml))
 
+; This gives us full control over the C stubs flags, otherwise
+; dune will add a standard set of flags to all stubs.
+(use_standard_c_and_cxx_flags false)
+
 ; Pending on dune 2.8 as to avoid bug with dune subst
 ; see https://github.com/ocaml/dune/pull/3879 and
 ; https://github.com/ocaml/dune/pull/3879
