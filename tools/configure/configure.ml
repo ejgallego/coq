@@ -203,13 +203,11 @@ type preferences = {
   output_summary : bool;
   vmbyteflags : string option;
   custom : bool option;
-  bindir : string option;
   libdir : string option;
   configdir : string option;
   datadir : string option;
   mandir : string option;
   docdir : string option;
-  coqdocdir : string option;
   ocamlfindcmd : string option;
   arch : string option;
   natdynlink : bool;
@@ -240,13 +238,11 @@ let default = {
   output_summary = true;
   vmbyteflags = None;
   custom = None;
-  bindir = None;
   libdir = None;
   configdir = None;
   datadir = None;
   mandir = None;
   docdir = None;
-  coqdocdir = None;
   ocamlfindcmd = None;
   arch = None;
   natdynlink = true;
@@ -357,8 +353,8 @@ let args_options = Arg.align [
     " Build bytecode executables with -custom (not recommended)";
   "-no-custom", arg_clear_option (fun p custom -> { p with custom }),
     " Do not build with -custom on Windows and MacOS";
-  "-bindir", arg_string_option (fun p bindir -> { p with bindir }),
-    "<dir> Where to install bin files";
+  "-bindir", arg_string_option (fun p _ -> p ),
+    "deprecated option, use -prefix";
   "-libdir", arg_string_option (fun p libdir -> { p with libdir }),
     "<dir> Where to install lib files";
   "-configdir", arg_string_option (fun p configdir -> { p with configdir }),
@@ -369,8 +365,8 @@ let args_options = Arg.align [
     "<dir> Where to install man files";
   "-docdir", arg_string_option (fun p docdir -> { p with docdir }),
     "<dir> Where to install doc files";
-  "-coqdocdir", arg_string_option (fun p coqdocdir -> { p with coqdocdir }),
-    "<dir> Where to install Coqdoc style files";
+  "-coqdocdir", arg_string_option (fun p _ -> p),
+    "deprecated option, use -prefix";
   "-ocamlfind", arg_string_option (fun p ocamlfindcmd -> { p with ocamlfindcmd }),
     "<dir> Specifies the ocamlfind command to use";
   "-flambda-opts", arg_string_list ' ' (fun p flambda_flags -> { p with flambda_flags }),
@@ -837,8 +833,8 @@ type path_style =
   | Relative of string (* Should not start with a "/" *)
 
 let install = [
-  "BINDIR", "the Coq binaries", !prefs.bindir,
-    Relative "bin", Relative "bin";
+  "COQPREFIX", "Coq", !prefs.prefix,
+    Relative "", Relative "";
   "COQLIBINSTALL", "the Coq library", !prefs.libdir,
     Relative "lib", Relative "lib/coq";
   "CONFIGDIR", "the Coqide configuration files", !prefs.configdir,
@@ -849,8 +845,6 @@ let install = [
     Relative "man", Relative "share/man";
   "DOCDIR", "the Coq documentation", !prefs.docdir,
     Relative "doc", Relative "share/doc/coq";
-  "COQDOCDIR", "the Coqdoc LaTeX files", !prefs.coqdocdir,
-    Relative "latex", Relative "share/texmf/tex/latex/misc";
  ]
 
 let strip_trailing_slash_if_any p =
@@ -1148,7 +1142,6 @@ let write_makefile f =
   List.iter (fun (v,msg,_,_) -> pr "# %s: path for %s\n" v msg) install_dirs;
   List.iter (fun (v,_,dir,_) -> pr "%s=%S\n" v dir) install_dirs;
   pr "\n# Coq version\n";
-  pr "COQPREFIX=%s\n" ((function None -> "local" | Some v -> v) !prefs.prefix);
   pr "VERSION=%s\n" coq_version;
   pr "# Objective-Caml compile command\n";
   pr "OCAML=%S\n" camlexec.top;
