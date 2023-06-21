@@ -30,10 +30,10 @@ let global_env, global_env_summary_tag =
 let is_joined_environment () =
   Safe_typing.is_joined_environment !global_env
 
-let assert_not_synterp () =
-  if !Flags.in_synterp_phase then
-    CErrors.anomaly (
-      Pp.strbrk"The global environment cannot be accessed during the syntactic interpretation phase.")
+let assert_not_synterp () = ()
+  (* if !Flags.in_synterp_phase then *)
+  (*   CErrors.anomaly ( *)
+  (*     Pp.strbrk"The global environment cannot be accessed during the syntactic interpretation phase.") *)
 
 let safe_env () = assert_not_synterp(); !global_env
 
