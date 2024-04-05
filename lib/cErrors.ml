@@ -16,7 +16,12 @@ let push = Exninfo.capture
 
 (* Errors *)
 
-exception Anomaly of string option * Pp.t (* System errors *)
+exception Anomaly = Noncritical.Anomaly
+
+(** Critical exceptions should not be caught and ignored by mistake
+    by inner functions during a [vernacinterp]. They should be handled
+    only at the very end of interp, to be displayed to the user. *)
+let noncritical = Noncritical.noncritical
 
 let _ =
   let pr = function
@@ -144,23 +149,9 @@ let _ = register_handler begin function
     Some pps
   | _ -> None
   end
-
-(** Critical exceptions should not be caught and ignored by mistake
-    by inner functions during a [vernacinterp]. They should be handled
-    only at the very end of interp, to be displayed to the user. *)
-
-[@@@ocaml.warning "-52"]
-let noncritical = function
-  | Sys.Break | Out_of_memory | Stack_overflow
-  | Assert_failure _ | Match_failure _ | Anomaly _
-  | Control.Timeout -> false
-  | Invalid_argument "equal: functional value" -> false
-  | _ -> true
-[@@@ocaml.warning "+52"]
-
 (* This should be in exninfo, but noncritical is here... *)
 let to_result ~f x =
   try Ok (f x)
-  with exn when noncritical exn ->
+  with exn when Noncritical.noncritical exn ->
     let iexn = Exninfo.capture exn in
     Error iexn

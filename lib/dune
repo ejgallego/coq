@@ -6,6 +6,9 @@
  (modules_without_implementation xml_datatype)
  (libraries
   coq-core.boot coq-core.clib coq-core.config
+  (select noncritical.ml from
+   (!memprof-limits -> noncritical.std.ml)
+   (memprof-limits -> noncritical.memprof.ml))
   (select instr.ml from
    (!coqperf -> instr.noperf.ml)
    (coqperf -> instr.perf.ml))))
