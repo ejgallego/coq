@@ -33,6 +33,8 @@ depends: [
   "zarith" {>= "1.11"}
   "ounit2" {with-test}
 ]
+depopts: ["coq-native" "memprof-limits"]
+dev-repo: "git+https://github.com/coq/coq.git"
 build: [
   # Requires dune 2.8 due to https://github.com/ocaml/dune/issues/3219
   # ["dune" "subst"] {pinned}
@@ -54,5 +56,3 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/coq/coq.git"
-depopts: ["coq-native"]
