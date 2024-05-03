@@ -18,9 +18,10 @@ let from_list l =
 let debug_coqdep = false
 let debug = false
 
+let vAccu = ref []
 let coqdep_register_file file =
   (* if debug then Format.eprintf "cd regfile: %s@\n%!" file; *)
-  CD.Common.treat_file_command_line (Path.to_string file)
+  vAccu := CD.Common.treat_file_command_line !vAccu (Path.to_string file)
 
 (* From dir info + context *)
 let make ~args ~(dir_info : _ Dir_info.t) =
@@ -29,12 +30,13 @@ let make ~args ~(dir_info : _ Dir_info.t) =
   let args = Coqdeplib.Args.parse (Coqdeplib.Args.make ()) args in
   (* We are sane w.r.t. path separators *)
   let make_separator_hack = false in
-  let st = CD.Common.init ~make_separator_hack args in
+  let st, vAccu_, meta_files = CD.Common.init ~make_separator_hack args in
+  vAccu := vAccu_;
   let () =
     Dir_info.iter dir_info ~f:(fun ~prefix:_ files ->
         let files = List.map Coq_module.source files in
         List.iter coqdep_register_file files) in
-  CD.Common.compute_deps st |> from_list
+  CD.Common.compute_deps ~meta_files !vAccu st |> from_list
 
 let lookup ~dep_info file =
   if debug then Format.eprintf "lookup: %a@\n%!" Path.pp file;

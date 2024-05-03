@@ -8,8 +8,6 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
-open File_util
-
 module Error = struct
 
   exception CannotFindMeta of string * string
@@ -107,9 +105,9 @@ let findlib_resolve ~meta_files ~file ~package ~plugin_name =
     in
     List.fold_right add path file
   in
-  let meta_file = normalize_path (to_relative_path meta_file) in
+  let meta_file = File_util.(normalize_path (to_relative_path meta_file)) in
   let cmxs_file =
     let meta_dir = Filename.dirname meta_file in
-    normalize_path (Filename.concat meta_dir cmxs_file)
+    File_util.normalize_path (Filename.concat meta_dir cmxs_file)
   in
   (meta_file, cmxs_file)

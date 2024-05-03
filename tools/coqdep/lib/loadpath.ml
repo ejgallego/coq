@@ -11,7 +11,6 @@
 (* Common types *)
 type basename = string
 type dirname = string
-type dir = string option
 type dirpath = string list
 type filename = string
 type root = filename * dirpath
@@ -147,17 +146,16 @@ type result =
 module State = struct
 
   type t =
-    { vfiles : (dirpath * dirpath, result) Hashtbl.t
+    { files : (dirpath * dirpath, result) Hashtbl.t
     ; coqlib : (dirpath * dirpath, result) Hashtbl.t
-    ; other : (dirpath * dirpath, result) Hashtbl.t
-    ; boot : bool
+    (* coqlib is used to supress the file not found warning; once we
+       configure coqdep correctly when not in -boot, this check can be
+       removed. *)
     }
 
-  let make ~boot =
-    { vfiles = Hashtbl.create 4101
-    ; coqlib = Hashtbl.create 19
-    ; other = Hashtbl.create 17317
-    ; boot
+  let make () =
+    { files = Hashtbl.create 33317
+    ; coqlib = Hashtbl.create 4101
     }
 
 end
@@ -184,18 +182,16 @@ let safe_add q root ((from, suffixes), file) =
   List.iter (fun (full,suff) -> safe_add_key q root (from,suff) (full,file)) suffixes
 
 let search_table table ?(from=[]) s =
-  Hashtbl.find table (from, s)
+  Hashtbl.find_opt table (from, s)
 
-let search_v_known st ?from s =
-  try Some (search_table st.State.vfiles ?from s)
-  with Not_found -> None
+let mem_table table ?(from=[]) s =
+  Hashtbl.mem table (from, s)
 
-let search_other_known st ?from s =
-  try Some (search_table st.State.other ?from s)
-  with Not_found -> None
+let search st ?from s =
+  search_table st.State.files ?from s
 
 let is_in_coqlib st ?from s =
-  try let _ = search_table st.State.coqlib ?from s in true with Not_found -> false
+  mem_table st.State.coqlib ?from s
 
 let add_paths recur root table phys_dir log_dir basename =
   let name = log_dir@[basename] in
@@ -204,6 +200,24 @@ let add_paths recur root table phys_dir log_dir basename =
   let iter n = safe_add table root (n, file) in
   List.iter iter paths
 
+let add st recur root phys_dir log_dir f =
+  match get_extension f [".v"; ".vo"; ".vos"] with
+    | (f,_) ->
+      add_paths recur root st.State.files phys_dir log_dir f
+
+let split_period = Str.split (Str.regexp (Str.quote "."))
+
+(** Simply add this directory and imports it, no subdirs. This is used
+    by the implicit adding of the current path (which is not recursive). *)
+let add_current_dir st dir = add_directory false (add st true) dir []
+
+(** -Q semantic: go in subdirs but only full logical paths are known. *)
+let add_r_include st path l = add_directory true (add st true) path (split_period l)
+
+(** -R semantic: go in subdirs and suffixes of logical paths are known. *)
+let add_q_include st path l = add_directory true (add st false) path (split_period l)
+
+(** Special coqlib mode  *)
 let add_coqlib_known st recur root phys_dir log_dir f =
   let root = (phys_dir, log_dir) in
   match get_extension f [".vo"; ".vos"] with
@@ -211,30 +225,5 @@ let add_coqlib_known st recur root phys_dir log_dir f =
         add_paths recur root st.State.coqlib phys_dir log_dir basename
     | _ -> ()
 
-let add_known st recur root phys_dir log_dir f =
-  match get_extension f [".v"; ".vo"; ".vos"] with
-    | (basename,".v") ->
-        add_paths recur root st.State.vfiles phys_dir log_dir basename
-    | (basename, (".vo" | ".vos")) when not st.State.boot ->
-        add_paths recur root st.State.vfiles phys_dir log_dir basename
-    | (f,_) ->
-        add_paths recur root st.State.other phys_dir log_dir f
-
-(** Simply add this directory and imports it, no subdirs. This is used
-    by the implicit adding of the current path (which is not recursive). *)
-let add_norec_dir_import add_file phys_dir log_dir =
-  add_directory false (add_file true) phys_dir log_dir
-
-(** -Q semantic: go in subdirs but only full logical paths are known. *)
-let add_rec_dir_no_import add_file phys_dir log_dir =
-  add_directory true (add_file false) phys_dir log_dir
-
-(** -R semantic: go in subdirs and suffixes of logical paths are known. *)
-let add_rec_dir_import add_file phys_dir log_dir =
-  add_directory true (add_file true) phys_dir log_dir
-
-let split_period = Str.split (Str.regexp (Str.quote "."))
-
-let add_current_dir st dir = add_norec_dir_import (add_known st) dir []
-let add_q_include st path l = add_rec_dir_no_import (add_known st) path (split_period l)
-let add_r_include st path l = add_rec_dir_import (add_known st) path (split_period l)
+let add_dir_coqlib st ~implicit dir dp =
+  add_directory true (add_coqlib_known st true) dir dp

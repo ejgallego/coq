@@ -14,7 +14,6 @@ val get_extension : string -> string list -> string * string
 (* Loadpaths *)
 type basename = string
 type dirname = string
-type dir = string option
 type filename = string
 type dirpath = string list
 type root = filename * dirpath
@@ -26,35 +25,19 @@ type result =
 module State : sig
   type t
 
-  val make : boot:bool -> t
+  val make : unit -> t
 end
 
-val search_v_known : State.t -> ?from:dirpath -> dirpath -> result option
-val search_other_known : State.t -> ?from:dirpath -> dirpath -> result option
-
-val is_in_coqlib : State.t -> ?from:dirpath -> dirpath -> bool
+val search : State.t -> ?from:dirpath -> dirpath -> result option
 
 val add_current_dir : State.t -> System.unix_path -> unit
 val add_q_include : State.t -> System.unix_path -> string -> unit
 val add_r_include : State.t -> System.unix_path -> string -> unit
 
-(* These should disappear in favor of add_q / add_r *)
+(** Only in no boot mode *)
+val add_dir_coqlib : State.t -> implicit:bool -> dirname -> dirpath -> unit
 
-(** Simply add this directory and imports it, no subdirs. This is used
-    by the implicit adding of the current path. *)
-val add_norec_dir_import :
-  (bool -> root -> dirname -> dirpath -> basename -> unit) -> dirname -> dirpath -> unit
-
-(** -Q semantic: go in subdirs but only full logical paths are known. *)
-val add_rec_dir_no_import :
-  (bool -> root -> dirname -> dirpath -> basename -> unit) -> dirname -> dirpath -> unit
-
-(** -R semantic: go in subdirs and suffixes of logical paths are known. *)
-val add_rec_dir_import :
-  (bool -> root -> dirname -> dirpath -> basename -> unit) -> dirname -> dirpath -> unit
-
-val add_known : State.t -> bool -> root -> dirname -> dirpath -> basename -> unit
-val add_coqlib_known : State.t -> bool -> root -> dirname -> dirpath -> basename -> unit
+val is_in_coqlib : State.t -> ?from:dirpath -> dirpath -> bool
 
 (** [find_dir_logpath phys_dir] Return the logical path of directory
    [dir] if it has been given one. Raise [Not_found] otherwise. In
