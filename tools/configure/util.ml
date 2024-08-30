@@ -110,7 +110,7 @@ let run ?(fatal=true) ?(verbose=false) ?(err=StdErr) prog args =
       let msg = sprintf "Error while running '%s' (%s)" cmd exn in
       if fatal then die msg else (warn "%s" msg; "", [])
 
-let tryrun prog args = run ~fatal:false ~err:DevNull prog args
+let tryrun prog args = run ~fatal:false ~err:StdErr prog args
 
 (** Splitting a string at some character *)
 

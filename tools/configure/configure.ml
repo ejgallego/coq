@@ -90,7 +90,8 @@ let resolve_caml () =
   then die ("Error: cannot find the executable '"^camlexec.find^"'.")
   else
     let findlib_version, _ = run camlexec.find ["query"; "findlib"; "-format"; "%v"] in
-    let caml_version, _ = run camlexec.find ["ocamlc";"-version"] in
+    (* let caml_version, _ = run camlexec.find ["ocamlc";"-version"] in *)
+    let caml_version, _ = run "ocamlc" ["-version"] in
     let camllib, _ = run camlexec.find ["printconf";"stdlib"] in
     let camlbin = (* TODO beurk beurk beurk *)
       Filename.dirname (Filename.dirname camllib) / "bin/" in
@@ -157,7 +158,8 @@ let msg_no_dynlink_cmxa prefs =
   cprintf prefs "and then run ./configure -natdynlink no"
 
 let check_native prefs camlenv =
-  let version, _ = tryrun camlexec.find ["opt";"-version"] in
+  (* let version, _ = tryrun camlexec.find ["opt";"-version"] in *)
+  let version, _ = tryrun "ocamlc.opt" ["-version"] in
   if version = "" then let () = msg_no_ocamlopt () in raise Not_found
   else if fst (tryrun camlexec.find ["query";"dynlink"]) = ""
   then let () = msg_no_dynlink_cmxa prefs in raise Not_found
@@ -328,8 +330,10 @@ let cflags_sse2 = "-msse2 -mfpmath=sse"
 let compute_cflags () =
   let _, slurp =
     (* Test SSE2_MATH support <https://stackoverflow.com/a/45667927> *)
-    tryrun camlexec.find
-      ["ocamlc"; "-ccopt"; cflags_dflt ^ " -march=native -dM -E " ^ cflags_sse2;
+    (* tryrun camlexec.find *)
+    (*   ["ocamlc"; "-ccopt"; cflags_dflt ^ " -march=native -dM -E " ^ cflags_sse2; *)
+    tryrun "ocamlc"
+      ["-ccopt"; cflags_dflt ^ " -march=native -dM -E " ^ cflags_sse2;
        "-c"; coqsrc/"dev/header.c"] in  (* any file *)
   if List.exists (fun line -> starts_with line "#define __SSE2_MATH__ 1") slurp
   then (cflags_dflt ^ " " ^ cflags_sse2, true)
