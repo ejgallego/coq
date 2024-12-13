@@ -131,10 +131,10 @@ _build/default/theories_dune _build/default/ltac2_dune .dune-stamp: FORCE
 	touch .dune-stamp
 
 theories/dune: .dune-stamp
-	cp -a _build/default/theories_dune $@ && chmod +w $@
+	cp _build/default/theories_dune $@ && chmod +w $@
 
 user-contrib/Ltac2/dune: .dune-stamp
-	cp -a _build/default/ltac2_dune $@ && chmod +w $@
+	cp _build/default/ltac2_dune $@ && chmod +w $@
 
 FORCE: ;
 
