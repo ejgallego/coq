@@ -526,53 +526,39 @@ let () = add_syntax_class "thunk" begin function
 | arg -> syntax_class_fail "thunk" arg
 end
 
+let constr_delimiters s arg =
+  List.map (function
+      | SexprRec (_, { v = Some s }, []) when Libnames.qualid_is_ident s -> Libnames.qualid_basename s
+      | _ -> syntax_class_fail s arg)
+    arg
+
 let () = add_syntax_class "constr" begin function arg ->
-  let delimiters = List.map (function
-      | SexprRec (_, { v = Some s }, []) -> s
-      | _ -> syntax_class_fail "constr" arg)
-      arg
-  in
+  let delimiters = constr_delimiters "constr" arg in
   let act e = Tac2quote.of_constr ~delimiters e in
   Tac2entries.SyntaxRule (Procq.Symbol.nterm Procq.Constr.constr, act)
 end
 
   let () = add_syntax_class "lconstr" begin function arg ->
-    let delimiters = List.map (function
-        | SexprRec (_, { v = Some s }, []) -> s
-        | _ -> syntax_class_fail "lconstr" arg)
-        arg
-    in
+  let delimiters = constr_delimiters "lconstr" arg in
     let act e = Tac2quote.of_constr ~delimiters e in
     Tac2entries.SyntaxRule (Procq.Symbol.nterm Procq.Constr.lconstr, act)
   end
 
 let () = add_syntax_class "open_constr" begin function arg ->
-  let delimiters = List.map (function
-      | SexprRec (_, { v = Some s }, []) -> s
-      | _ -> syntax_class_fail "open_constr" arg)
-      arg
-  in
+  let delimiters = constr_delimiters "open_constr" arg in
   let act e = Tac2quote.of_open_constr ~delimiters e in
   Tac2entries.SyntaxRule (Procq.Symbol.nterm Procq.Constr.constr, act)
 end
 
 let () = add_syntax_class "open_lconstr" begin function arg ->
-  let delimiters = List.map (function
-      | SexprRec (_, { v = Some s }, []) -> s
-      | _ -> syntax_class_fail "open_lconstr" arg)
-      arg
-  in
+  let delimiters = constr_delimiters "open_lconstr" arg in
   let act e = Tac2quote.of_open_constr ~delimiters e in
   Tac2entries.SyntaxRule (Procq.Symbol.nterm Procq.Constr.lconstr, act)
 end
 
 
 let () = add_syntax_class "preterm" begin function arg ->
-  let delimiters = List.map (function
-      | SexprRec (_, { v = Some s }, []) -> s
-      | _ -> syntax_class_fail "preterm" arg)
-      arg
-  in
+  let delimiters = constr_delimiters "preterm" arg in
   let act e = Tac2quote.of_preterm ~delimiters e in
   Tac2entries.SyntaxRule (Procq.Symbol.nterm Procq.Constr.constr, act)
 end
