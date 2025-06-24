@@ -942,6 +942,17 @@ let pr_register_notation tkn (entry,lev) body =
 
 let tactic_qualid = qualid_of_ident (Id.of_string "tactic")
 
+(* TODO: Add to Ltac2 manual *)
+(* TODO: intern the entry name when the option is set instead of at
+   use time (need to generalize goptions?) *)
+let { Goptions.get = get_default_ltac2_entry } = Goptions.declare_stringopt_option_and_ref
+    ~stage:Synterp ~key:["Ltac2"; "Default"; "Notation"; "Entry"]
+    ~value:None ()
+
+let { Goptions.get = get_default_ltac2_entry_level } = Goptions.declare_intopt_option_and_ref
+    ~stage:Synterp ~key:["Ltac2"; "Default"; "Notation"; "Entry"; "Level"]
+    ~value:None ()
+
 let register_notation atts tkn (entry,lev) body =
   let deprecation, local = Attributes.(parse Notations.(deprecation ++ locality)) atts in
   let local = Option.default false local in
@@ -966,13 +977,17 @@ let register_notation atts tkn (entry,lev) body =
       | Some entry ->
         if qualid_eq entry tactic_qualid then None
         else Some entry
-      | None -> None
+      | None ->
+        Option.map qualid_of_string (get_default_ltac2_entry ())
     in
     (* Globalize so that names are absolute *)
     let lev = if Option.has_some entry then
         let lev = match lev with
           | Some lev -> lev
-          | None -> user_err (str "Custom entry level must be explicit.")
+          | None ->
+            (match get_default_ltac2_entry_level () with
+                 | Some lev -> lev
+                 | None -> user_err (str "Custom entry level must be explicit."))
         in
         let () = if lev < 0 then user_err (str "Custom entry levels must be nonnegative.") in
         lev
