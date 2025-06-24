@@ -65,6 +65,10 @@ val ltac2def_syn :
 
 val wit_ltac2_expr : Tac2expr.raw_tacexpr Genarg.vernac_genarg_type
 
+val wit_ltac2_selector : Goal_select.t Genarg.vernac_genarg_type
+
+val wit_ltac2_use_default : bool Genarg.vernac_genarg_type
+
 val ltac2_expr : Tac2expr.raw_tacexpr Procq.Entry.t
 
 val ltac2_atom : Tac2expr.raw_tacexpr Procq.Entry.t

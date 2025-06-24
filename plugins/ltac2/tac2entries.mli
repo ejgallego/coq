@@ -113,3 +113,5 @@ val q_move_location : move_location Procq.Entry.t
 val q_pose : pose Procq.Entry.t
 val q_assert : assertion Procq.Entry.t
 end
+
+val hack_table_entry : (Names.Id.t, raw_tacexpr Procq.Entry.t) Hashtbl.t
