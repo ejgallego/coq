@@ -637,13 +637,22 @@ let interp_custom_entry_action ?loc id entry : syntax_class_interpretation = fun
     CErrors.user_err ?loc
       Pp.(str "Invalid arguments for ltac2 custom entry " ++ Id.print id ++ str ".")
 
+let hack_table_entry : (Names.Id.t, _ Procq.Entry.t) Hashtbl.t = Hashtbl.create 23
+let find_hack_table_entry = Hashtbl.find_opt hack_table_entry
+
+let find_custom_or_hack id =
+  match Procq.find_custom_entry ltac2_custom_entry (name_of_custom_entry id) with
+  | entry -> Some entry
+  | exception Not_found ->
+    find_hack_table_entry id
+
 let find_syntactic_class ?loc id =
   match Id.Map.find_opt id !syntax_class_table with
   | Some v -> v
   | None ->
-    match Procq.find_custom_entry ltac2_custom_entry (name_of_custom_entry id) with
-    | entry -> interp_custom_entry_action ?loc id entry
-    | exception Not_found ->
+    match find_custom_or_hack id with
+    | Some entry -> interp_custom_entry_action ?loc id entry
+    | None ->
       CErrors.user_err ?loc (str "Unknown syntactic class" ++ spc () ++ Names.Id.print id)
 
 module ParseToken =
@@ -749,9 +758,6 @@ let fresh_level st entry lev =
       let st = Procq.GramState.set st ltac2_levels all_levels in
       st, Some pos
 
-let hack_table_entry : (Names.Id.t, _ Procq.Entry.t) Hashtbl.t = Hashtbl.create 23
-let find_hack_table_entry = Hashtbl.find_opt hack_table_entry
-
 let perform_notation syn st =
   let tok = List.rev_map ParseToken.parse_token syn.synext_tok in
   let KRule (rule, act) = get_rule tok in
@@ -781,13 +787,10 @@ let perform_notation syn st =
   let entry = match entry with
     | None -> Pltac.ltac2_expr
     | Some entry ->
-      match Procq.find_custom_entry ltac2_custom_entry (name_of_custom_entry entry) with
-      | entry -> entry
-      | exception Not_found ->
-        match find_hack_table_entry entry with
-        | Some entry -> entry
-        | None ->
-          CErrors.user_err Pp.(str "Unknown Ltac2 custom entry " ++ Id.print entry ++ str".")
+      match find_custom_or_hack entry with
+      | Some entry -> entry
+      | None ->
+        CErrors.user_err Pp.(str "Unknown Ltac2 custom entry " ++ Id.print entry ++ str".")
   in
   [Procq.ExtendRule (entry, rule)], st
 
