@@ -63,6 +63,7 @@ module type S = sig
     val of_parser : string -> 'a parser_fun -> 'a t mod_estate
     val parse_token_stream : 'a t -> (keyword_state,te) LStream.t -> 'a with_gstate
     val print : Format.formatter -> 'a t -> unit with_estate
+    val print_as_tree : Format.formatter -> 'a t -> unit with_estate
     val is_empty : 'a t -> bool with_estate
 
     type any_t = Any : 'a t -> any_t
