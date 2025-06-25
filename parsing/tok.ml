@@ -138,20 +138,20 @@ let match_pattern (type c) (p : c p) : t -> c =
     (function KEYWORD s' when seq s s' -> s'
             | NUMBER n when seq s (NumTok.Unsigned.sprint n) -> s
             | STRING s' when seq s (CString.quote_coq_string s') -> s
-            | _tok -> err (Format.asprintf "got %a, expected PKEYWORD %s" pp_t _tok s))
-  | PIDENT None -> (function IDENT s' -> s' | _ -> err "PIDENT None")
+            | _tok -> err (Format.asprintf "got %a, expected keyword \"%s\"" pp_t _tok s))
+  | PIDENT None -> (function IDENT s' -> s' | _ -> err "expected IDENT")
   | PIDENT (Some s) -> (function (IDENT s' | KEYWORD s') when seq s s' -> s' | _ ->
-      err "PIDENT Some")
-  | PFIELD None -> (function FIELD s -> s | _ -> err "PFIELD None")
-  | PFIELD (Some s) -> (function FIELD s' when seq s s' -> s' | _ -> err "PFIELD Some")
-  | PNUMBER None -> (function NUMBER s -> s | _ -> err "PNUMBER None")
+      err ("expected ident "^ s))
+  | PFIELD None -> (function FIELD s -> s | _ -> err "expected FIELD")
+  | PFIELD (Some s) -> (function FIELD s' when seq s s' -> s' | _ -> err ("expected FIELD "^ s))
+  | PNUMBER None -> (function NUMBER s -> s | _ -> err "expected NUMBER")
   | PNUMBER (Some n) ->
     let s = NumTok.Unsigned.sprint n in
-    (function NUMBER n' when s = NumTok.Unsigned.sprint n' -> n' | _ -> err "PNUMBER Some")
-  | PSTRING None -> (function STRING s -> s | _ -> err "PSTRING None")
-  | PSTRING (Some s) -> (function STRING s' when seq s s' -> s' | _ -> err "PSTRING Some")
-  | PLEFTQMARK -> (function LEFTQMARK -> () | _ -> err "PLEFTQMARK")
-  | PBULLET None -> (function BULLET s -> s | _ -> err "PBULLET")
-  | PBULLET (Some s) -> (function BULLET s' when seq s s' -> s' | _ -> err "PBULLET")
-  | PQUOTATION lbl -> (function QUOTATION(lbl',s') when string_equal lbl lbl' -> s' | _ -> err "PQUOTATION")
-  | PEOI -> (function EOI -> () | _ -> err "PEOI")
+    (function NUMBER n' when s = NumTok.Unsigned.sprint n' -> n' | _ -> err ("expected NUMBER "^s))
+  | PSTRING None -> (function STRING s -> s | _ -> err "expected STRING")
+  | PSTRING (Some s) -> (function STRING s' when seq s s' -> s' | _ -> err ("expected STRING "^s))
+  | PLEFTQMARK -> (function LEFTQMARK -> () | _ -> err "expected LEFTQMARK")
+  | PBULLET None -> (function BULLET s -> s | _ -> err "expected BULLET")
+  | PBULLET (Some s) -> (function BULLET s' when seq s s' -> s' | _ -> err ("expected BULLET "^s))
+  | PQUOTATION lbl -> (function QUOTATION(lbl',s') when string_equal lbl lbl' -> s' | _ -> err ("expected QUOTATION "^lbl))
+  | PEOI -> (function EOI -> () | _ -> err "expected EOI")
