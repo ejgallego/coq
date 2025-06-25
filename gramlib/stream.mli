@@ -19,8 +19,9 @@ type ('e,'a) t
 (** The type of streams holding values of type ['a].
     Producing a new value needs an environment ['e]. *)
 
-exception Failure
-(** Raised by streams when trying to access beyond their end. *)
+exception Failure of string
+(** Raised by streams when trying to access beyond their end. The
+    argument contains debug information / reason *)
 
 (** {1 Stream builders} *)
 

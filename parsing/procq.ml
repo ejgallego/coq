@@ -184,7 +184,7 @@ end
 module Lookahead =
 struct
 
-  let err () = raise Stream.Failure
+  let err msg = raise (Stream.Failure msg)
 
   type t = int -> CLexer.keyword_state -> (CLexer.keyword_state,Tok.t) LStream.t -> int option
 
@@ -199,7 +199,11 @@ struct
     if contiguous n (n+m-1) strm then Some m else None
 
   let to_entry s (lk : t) =
-    let run kwstate strm = match lk 0 kwstate strm with None -> err () | Some _ -> () in
+    let run kwstate strm =
+      match lk 0 kwstate strm
+      with None -> err "Procq.Lookahead.to_entry: peek failed"
+         | Some _ -> ()
+    in
     Entry.(of_parser s { parser_fun = run })
 
   let (>>) (lk1 : t) lk2 n kwstate strm = match lk1 n kwstate strm with

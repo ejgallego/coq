@@ -7,7 +7,7 @@ type vernac_toplevel =
   | VernacShowGoal of { gid : int; sid : int; }
   | VernacShowProofDiffs of Proof_diffs.diffOpt
 
-val err : unit -> 'a
+val err : string -> 'a
 
 val test_show_goal : unit Procq.Entry.t
 
