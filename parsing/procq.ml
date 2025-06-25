@@ -176,6 +176,7 @@ module Entry = struct
       ()
   let parse_token_stream e strm = parse_token_stream e strm (gstate())
   let print fmt e = print fmt e (gstate()).estate
+  let print_as_tree fmt e = print_as_tree fmt e (gstate()).estate
   let is_empty e = is_empty e (gstate()).estate
   let accumulate_in e = accumulate_in e (gstate()).estate
   let all_in () = all_in () (gstate()).estate

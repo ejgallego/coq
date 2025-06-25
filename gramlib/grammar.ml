@@ -64,10 +64,12 @@ module type S = sig
     val of_parser : string -> 'a parser_fun -> 'a t mod_estate
     val parse_token_stream : 'a t -> (keyword_state,te) LStream.t -> 'a with_gstate
     val print : Format.formatter -> 'a t -> unit with_estate
+    val print_as_tree : Format.formatter -> 'a t -> unit with_estate
     val is_empty : 'a t -> bool with_estate
     type any_t = Any : 'a t -> any_t
     val accumulate_in : any_t list -> any_t list CString.Map.t with_estate
     val all_in : unit -> any_t list CString.Map.t with_estate
+
   end
 
   module rec Symbol : sig
@@ -751,6 +753,26 @@ let rec flatten_tree : type s tr a. (s, tr, a) ty_tree -> s ex_symbols list =
   | Node (_, {node = n; brother = b; son = s}) ->
       List.map (fun (ExS l) -> ExS (TCns (MayRec2, n, l))) (flatten_tree s) @ flatten_tree b
 
+module Tree = struct
+
+  type 'a t = Empty | Leaf of 'a | Node of 'a t * 'a t
+
+  let rec map ~f = function
+    | Empty -> Empty
+    | Leaf x -> Leaf (f x)
+    | Node (l, r) -> Node (map ~f l, map ~f r)
+
+  let rec process_ty_tree : type s tr a. (s, tr, a) ty_tree -> s ex_symbols t =
+    function
+    | DeadEnd -> Empty
+    | LocAct (_, _) -> Leaf (ExS TNil)
+    | Node (_, {node = n; brother = b; son = s}) ->
+      (* This is fishy *)
+      let f (ExS l) = ExS (TCns (MayRec2, n, l)) in
+      let l, r = map ~f (process_ty_tree b), map ~f (process_ty_tree s) in
+      Node (l, r)
+end
+
 let utf8_string_escaped s =
   let b = Buffer.create (String.length s) in
   let rec loop i =
@@ -871,6 +893,18 @@ let print_entry estate ppf e =
   | Dparser _ -> fprintf ppf "<parser>"
   end;
   fprintf ppf " ]@]"
+
+module PrintAsTree = struct
+
+  let print estate ppf e =
+    fprintf ppf "@[<v 0>[ ";
+    begin match (get_entry estate e).edesc with
+      Dlevels elev -> print_levels ppf elev
+    | Dparser _ -> fprintf ppf "<parser>"
+    end;
+    fprintf ppf " ]@]"
+
+end
 
 let name_of_symbol : type s tr a. s ty_entry -> (s, tr, a) ty_symbol -> string =
   fun entry ->
@@ -1730,6 +1764,8 @@ module Entry = struct
     estate, e
 
   let print ppf e estate = fprintf ppf "%a@." (print_entry estate) e
+
+  let print_as_tree ppf e estate = fprintf ppf "%a@." (PrintAsTree.print estate) e
 
   let is_empty e estate = match (get_entry estate e).edesc with
   | Dparser _ -> failwith "Arbitrary parser entry"
