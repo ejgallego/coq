@@ -47,6 +47,17 @@ type t =
   | QUOTATION of string * string
   | EOI
 
+let pp_t fmt = let open Format in function
+  | KEYWORD s -> fprintf fmt "'%s'" s
+  | IDENT s -> fprintf fmt "%s" s
+  | FIELD s -> fprintf fmt "FIELD %s" s
+  | NUMBER n -> fprintf fmt "%s" (NumTok.Unsigned.sprint n)
+  | STRING s -> fprintf fmt "\"%s\"" s
+  | LEFTQMARK -> fprintf fmt "LEFTQMARK"
+  | BULLET s -> fprintf fmt "BULLET %s" s
+  | QUOTATION (s,m) -> fprintf fmt "QUOTATION %s %s" s m
+  | EOI -> fprintf fmt "EOI"
+
 let equal_p (type a b) (t1 : a p) (t2 : b p) : (a, b) Util.eq option =
   let streq s1 s2 = match s1, s2 with None, None -> true
     | Some s1, Some s2 -> string_equal s1 s2 | _ -> false in
@@ -123,10 +134,11 @@ let match_pattern (type c) (p : c p) : t -> c =
   let err msg = raise (Gramlib.Stream.Failure ("match_pattern: " ^ msg)) in
   let seq = string_equal in
   match p with
-  | PKEYWORD s -> (function KEYWORD s' when seq s s' -> s'
-                          | NUMBER n when seq s (NumTok.Unsigned.sprint n) -> s
-                          | STRING s' when seq s (CString.quote_coq_string s') -> s
-                          | _ -> err "PKEYWORD")
+  | PKEYWORD s ->
+    (function KEYWORD s' when seq s s' -> s'
+            | NUMBER n when seq s (NumTok.Unsigned.sprint n) -> s
+            | STRING s' when seq s (CString.quote_coq_string s') -> s
+            | _tok -> err (Format.asprintf "got %a, expected PKEYWORD %s" pp_t _tok s))
   | PIDENT None -> (function IDENT s' -> s' | _ -> err "PIDENT None")
   | PIDENT (Some s) -> (function (IDENT s' | KEYWORD s') when seq s s' -> s' | _ ->
       err "PIDENT Some")
