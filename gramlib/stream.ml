@@ -23,7 +23,7 @@ and ('e,'a) gen = { mutable curr : 'a option option; func : 'e -> 'a option }
 and buffio =
   { ic : in_channel; buff : bytes; mutable len : int; mutable ind : int }
 
-exception Failure
+exception Failure of string
 
 let count { count } = count
 
@@ -75,7 +75,7 @@ let npeek e n s =
 
 let nth e n st =
   try List.nth (npeek e (n+1) st) n
-  with Stdlib.Failure _ -> raise Failure
+  with Stdlib.Failure _ -> raise (Failure "nth")
 
 let rec njunk e n st =
   if n <> 0 then (junk e st; njunk e (n-1) st)
@@ -83,14 +83,12 @@ let rec njunk e n st =
 let next e s =
   match peek e s with
     Some a -> junk e s; a
-  | None -> raise Failure
-
+  | None -> raise (Failure "next")
 
 let is_empty e s =
   match peek e s with
   | Some _ -> false
   | None -> true
-
 
 (* Stream building functions *)
 

@@ -70,7 +70,9 @@ let peek_nth e n strm =
     match list, p with
       x :: _, 0 -> strm.max_peek <- Stream.count strm.strm + n + 1; x
     | _ :: l, p -> loop l (p - 1)
-    | [], p -> strm.max_peek <- Stream.count strm.strm + (n - p); raise Stream.Failure
+    | [], p ->
+      strm.max_peek <- Stream.count strm.strm + (n - p);
+      raise (Stream.Failure "peek_nth")
   in
   loop list n
 

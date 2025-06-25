@@ -353,7 +353,9 @@ let rec string loc ~comm_level bp len s = match Stream.peek () s with
       Stream.junk () s;
       string loc ~comm_level bp (store len c) s
   | _ ->
-    let () = if not (Stream.is_empty () s) then raise Stream.Failure in
+    let () =
+      if not (Stream.is_empty () s)
+      then raise (Stream.Failure "CLexer.string: invalid char") in
     let ep = Stream.count s in
     let loc = set_loc_pos loc bp ep in
     err loc Unterminated_string
@@ -403,7 +405,8 @@ let rec comment loc bp s =
               Stream.junk () s;
               push_string "(*"; comment loc bp s
           | _ -> push_string "("; loc
-        with Stream.Failure -> raise (Gramlib.Grammar.Error "")
+        with Stream.Failure msg ->
+          raise (Gramlib.Grammar.Error ("reraised in CLexer.comment '(': " ^ msg))
       in
       comment loc bp s
   | Some '*' ->
@@ -412,7 +415,8 @@ let rec comment loc bp s =
         match Stream.peek () s with
           Some ')' -> Stream.junk () s; push_string "*)"; loc
         | _ -> real_push_char '*'; comment loc bp s
-      with Stream.Failure -> raise (Gramlib.Grammar.Error "")
+      with Stream.Failure msg ->
+        raise (Gramlib.Grammar.Error ("reraised in CLexer.comment '*': " ^ msg))
       end
   | Some '"' ->
       Stream.junk () s;
@@ -434,7 +438,7 @@ let rec comment loc bp s =
           | Some z ->
               Stream.junk () s;
               real_push_char z; comment loc bp s
-          | _ -> raise Stream.Failure
+          | _ -> raise (Stream.Failure "CLexer.comment: default with non-emtpy stream")
 
 (* Parse a special token, using the [token_tree] *)
 
@@ -486,10 +490,13 @@ let peek_marker_len b e s =
   let rec peek n =
     match Stream.nth () n s with
     | c -> if c = b then peek (n+1) else n, List.make n b, List.make n e
-    | exception Stream.Failure -> n, List.make n b, List.make n e
+    | exception Stream.Failure _ ->
+      (* XXX: Add debug info? *)
+      n, List.make n b, List.make n e
   in
   let len, start, stop = peek 0 in
-  if len = 0 then raise Stream.Failure
+  if len = 0
+  then raise (Stream.Failure "CLexer.peek_marker_len: 0-length")
   else Delimited (len, start, stop)
 
 let peek_marker s =
@@ -498,15 +505,17 @@ let peek_marker s =
     | '[' -> peek_marker_len '[' ']' s
     | '{' -> peek_marker_len '{' '}' s
     | ('a'..'z' | 'A'..'Z' | '_') -> ImmediateAsciiIdent
-    | _ -> raise Stream.Failure
+    | _ -> raise (Stream.Failure "CLexer.peek_marker: invalid marker")
 
 let parse_quotation loc bp s =
   match peek_marker s with
   | ImmediateAsciiIdent ->
       let c = Stream.next () s in
       let len =
-        try ident_tail loc (store 0 c) s with
-          Stream.Failure -> raise (Gramlib.Grammar.Error "")
+        try ident_tail loc (store 0 c) s
+        with Stream.Failure msg ->
+          raise (Gramlib.Grammar.Error
+                   Format.(asprintf "parse_quotation: ident_tail failed with %s" msg))
       in
       get_buff len, set_loc_pos loc bp (Stream.count s)
   | Delimited (lenmarker, bmarker, emarker) ->
@@ -532,12 +541,14 @@ let parse_quotation loc bp s =
               quotation loc depth
         | '.' :: _ ->
               commit1 '.';
-              if not dot_gobbling && blank_or_eof s then raise Stream.Failure;
+              if not dot_gobbling && blank_or_eof s
+              then raise (Stream.Failure "CLexer.parse_quotation '.' failed at dot_globbing");
               quotation loc depth
         | c :: cs ->
               commit1 c;
               quotation loc depth
-        | [] -> raise Stream.Failure
+        | [] ->
+          raise (Stream.Failure "CLexer.parse_quotation: empty list")
       in
       let loc = quotation loc 0 in
       Buffer.contents b, set_loc_pos loc bp (Stream.count s)
@@ -638,8 +649,9 @@ let rec next_token ~diff_mode ttree loc s =
   | Some ('.' as c) ->
       Stream.junk () s;
       let t, newloc =
-        try parse_after_dot ~diff_mode ttree loc c bp s with
-          Stream.Failure -> raise (Gramlib.Grammar.Error "")
+        try parse_after_dot ~diff_mode ttree loc c bp s
+        with Stream.Failure msg ->
+          raise (Gramlib.Grammar.Error ("CLexer.next_token, reraised in '.': " ^ msg))
       in
       between_commands := false;
       (* We enforce that "." should either be part of a larger keyword,
@@ -670,8 +682,9 @@ let rec next_token ~diff_mode ttree loc s =
   | Some ('a'..'z' | 'A'..'Z' | '_' as c) ->
       Stream.junk () s;
       let len =
-        try ident_tail loc (store 0 c) s with
-          Stream.Failure -> raise (Gramlib.Grammar.Error "")
+        try ident_tail loc (store 0 c) s
+        with Stream.Failure msg ->
+          raise (Gramlib.Grammar.Error ("CLexer.next_token: reraised in char " ^ msg))
       in
       let id = get_buff len in
       between_commands := false;
@@ -689,8 +702,9 @@ let rec next_token ~diff_mode ttree loc s =
   | Some '\"' ->
       Stream.junk () s;
       let (loc, len) =
-        try string loc ~comm_level:None bp 0 s with
-          Stream.Failure -> raise (Gramlib.Grammar.Error "")
+        try string loc ~comm_level:None bp 0 s
+        with Stream.Failure msg ->
+          raise (Gramlib.Grammar.Error ("CLexer.next_token: reraised in \\ " ^ msg))
       in
       let ep = Stream.count s in
       between_commands := false;
@@ -717,7 +731,8 @@ let rec next_token ~diff_mode ttree loc s =
           let t = process_chars ~diff_mode ttree loc bp [c] s in
           between_commands := false;
           t
-      with Stream.Failure -> raise (Gramlib.Grammar.Error "")
+      with Stream.Failure msg ->
+        raise (Gramlib.Grammar.Error ("CLexer.next_token: reraised in ( " ^ msg))
       end
   | Some ('{' | '}' as c) ->
       Stream.junk () s;

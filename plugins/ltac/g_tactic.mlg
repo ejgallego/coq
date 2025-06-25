@@ -35,7 +35,7 @@ let all_with ~head delta =
   let all = [FBeta;FMatch;FFix;FCofix;FZeta;delta] in
   Redops.make_red_flag (if head then FHead :: all else all)
 
-let err () = raise Gramlib.Stream.Failure
+let err msg = raise (Gramlib.Stream.Failure msg)
 
 (* Hack to parse "(x:=t)" as an explicit argument without conflicts with the *)
 (* admissible notation "(x t)" *)
@@ -76,22 +76,22 @@ let check_for_coloneq =
         match List.last (Gramlib.LStream.npeek kwstate n strm) with
         | KEYWORD "(" -> skip_to_rpar (p+1) (n+1)
         | KEYWORD ")" -> if Int.equal p 0 then n+1 else skip_to_rpar (p-1) (n+1)
-        | KEYWORD "." -> err ()
+        | KEYWORD "." -> err "check_for_coloneq: KEYWORD DOT"
         | _ -> skip_to_rpar p (n+1) in
       let rec skip_names n =
         match List.last (Gramlib.LStream.npeek kwstate n strm) with
         | IDENT _ | KEYWORD "_" -> skip_names (n+1)
         | KEYWORD ":" -> skip_to_rpar 0 (n+1) (* skip a constr *)
-        | _ -> err () in
+        | _ -> err "entry_of_parser: lpar_id_colon at skip_names" in
       let rec skip_binders n =
         match List.last (Gramlib.LStream.npeek kwstate n strm) with
         | KEYWORD "(" -> skip_binders (skip_names (n+1))
         | IDENT _ | KEYWORD "_" -> skip_binders (n+1)
         | KEYWORD ":=" -> ()
-        | _ -> err () in
+        | _ -> err "entry_of_parser: lpar_id_colon at skip_binders" in
       match Gramlib.LStream.peek_nth kwstate 0 strm with
       | KEYWORD "(" -> skip_binders 2
-      | _ -> err () })
+      | _ -> err "entry_of_parser: lpar_id_colon at peek"})
 
 let lookup_at_as_comma =
   let open Procq.Lookahead in
@@ -442,7 +442,7 @@ GRAMMAR EXTEND Gram
         (* Condition for accepting "in" at the end by compatibility *)
         { match ic,el,cl_tolerance with
         | [c,pat,None],Some _,Some _ -> ([c,pat,cl_tolerance],el)
-        | _,_,Some _ -> err ()
+        | _,_,Some _ -> err "g_tactic.mlg: induction_clause_list"
         | _,_,None -> (ic,el) } ] ]
   ;
   simple_tactic:
